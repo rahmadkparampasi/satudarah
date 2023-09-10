@@ -7,12 +7,17 @@ use App\Models\DesaModel;
 use App\Models\GolModel;
 use App\Models\KecModel;
 use App\Models\PrsnModel;
+use App\Models\SegModel;
+use App\Models\UsersModel;
 use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx as Reader;
+use Picqer\Barcode\Barcode;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class PrsnController extends Controller
 {
@@ -35,10 +40,12 @@ class PrsnController extends Controller
 
     public function index()
     {
+        $this->data['mobile'] = $this->isMobile();
+
         $this->data['Pgn'] = $this->getUser();
-        // if ($this->data['Pgn']->users_tipe!="ADM") {
-        //     return redirect()->intended();
-        // }
+        if ($this->data['Pgn']->users_tipe!="ADM"&&$this->data['Pgn']->users_tipe!="UTD") {
+            return redirect()->intended();
+        }
 
         $this->data['ButtonMethod'] = 'SIMPAN';
         $this->data['MethodForm'] = 'insertData';
@@ -49,16 +56,17 @@ class PrsnController extends Controller
 
         $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
 
-        $this->data['Prsn'] = PrsnModel::leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis'])->orderBy('prsn_ord', 'desc')->limit(100)->get();
+        $this->data['Prsn'] = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_ord', 'desc')->limit(20)->get();
         $this->data['Prsn'] = PrsnController::setData($this->data['Prsn']);
 
         $this->data['Gol'] = GolController::getDataActStat();
+        $this->data['Krj'] = KrjController::getDataActStat();
         $this->data['Kec'] = KecController::getData();
 
         return view('prsn.index', $this->data);
     }
 
-    public function load($search_key = '', $search_val = '')
+    public function load($search_nm = '', $search_tgl = '')
     {
         $this->data['Pgn'] = $this->getUser();
 
@@ -68,23 +76,26 @@ class PrsnController extends Controller
         $this->data['UrlForm'] = 'prsn';
 
         $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
-        if($search_key!=''&&$search_val!=''){
+        if($search_nm!=''&&$search_tgl!=''){
             $this->data['search'] = "";
-            $this->data['search_key'] = $search_key;
-            $this->data['search_val'] = $search_val;
-            $Prsn = PrsnModel::leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id');
+            $this->data['search_nm'] = $search_nm;
+            $this->data['search_tgl'] = $search_tgl;
+            $Prsn = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id');
     
-            if ($search_key=="Nama") {
-                $Prsn = $Prsn->where('prsn_nm', 'LIKE', '%'. $search_val .'%');
-            }elseif ($search_key=="NIK") {
-                $Prsn = $Prsn->where('prsn_nik', 'LIKE', '%'. $search_val .'%');
-            }elseif ($search_key=="Telp") {
-                $Prsn = $Prsn->where('prsn_telp', 'LIKE', '%'. $search_val .'%');
-            }
+            $Prsn = $Prsn->where(function($query) use ($search_nm){
+                $query->where('prsn_nm', 'like', '%'.$search_nm.'%');
+                $namaBaru = explode(" ", $search_nm);
+                if (count($namaBaru)>1) {
+                    for ($i=1; $i < count($namaBaru); $i++) { 
+                        $query->orWhere('prsn_nm', 'like', '%'.$namaBaru[$i].'%');
+                    }
+                }
+            })
+            ->where('prsn_tgllhr', $search_tgl);
     
-            $Prsn = $Prsn->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis'])->orderBy('prsn_ord', 'desc')->limit(20)->get();
+            $Prsn = $Prsn->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_nm', 'asc')->limit(20)->get();
         }else{
-            $Prsn = PrsnModel::leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis'])->orderBy('prsn_ord', 'desc')->limit(100)->get();
+            $Prsn = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_ord', 'desc')->limit(20)->get();
         }
 
         $this->data['Prsn'] = PrsnController::setData($Prsn);
@@ -92,9 +103,95 @@ class PrsnController extends Controller
         return view('prsn.data', $this->data);
     }
 
+    public function viewData($prsn_id)
+    {
+        $this->data['mobile'] = $this->isMobile();
+
+        $this->data['Pgn'] = $this->getUser();
+        if ($this->data['Pgn']->users_tipe!="ADM"&&$this->data['Pgn']->users_tipe!="UTD") {
+            return redirect()->intended();
+        }
+
+        $this->data['ButtonMethod'] = 'SIMPAN';
+        $this->data['MethodForm'] = 'insertData';
+        $this->data['IdForm'] = 'prsnAddData';
+        $this->data['UrlForm'] = 'prsn';
+        $this->data['prsn_id'] = $prsn_id;
+
+        $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
+
+        $this->data['Prsn'] = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('prsn_id', $prsn_id)->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_ord', 'desc')->get()->first();
+        if ($this->data['Prsn']==null) {
+            $this->data['Message'] = 'Data Personal Tidak Ditemukan';
+            return view('layouts.notFound', $this->data);
+        }
+        $this->data['Prsn']->total = DnrmController::countDnrPrsn($prsn_id);
+        $this->data['Prsn'] = PrsnController::setData($this->data['Prsn']);
+        $this->data['Gol'] = GolController::getDataActStat();
+        $this->data['Krj'] = KrjController::getDataActStat();
+        $this->data['Kec'] = KecController::getData();
+        $this->data['Dnrm'] = DnrmController::loadPrsn($prsn_id);
+
+        return view('prsn.detail', $this->data);
+    }
+
+    public function loadViewData($prsn_id)
+    {
+        $this->data['mobile'] = $this->isMobile();
+
+        $this->data['ButtonMethod'] = 'SIMPAN';
+        $this->data['MethodForm'] = 'insertData';
+        $this->data['IdForm'] = 'prsnAddData';
+        $this->data['UrlForm'] = 'prsn';
+        $this->data['prsn_id'] = $prsn_id;
+
+        $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
+
+        $this->data['Prsn'] = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('prsn_id', $prsn_id)->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_ord', 'desc')->get()->first();
+        
+        $this->data['Prsn']->total = DnrmController::countDnrPrsn($prsn_id);
+        $this->data['Prsn'] = PrsnController::setData($this->data['Prsn']);
+
+        return view('prsn.detailDetail', $this->data);
+    }
+
+    function loadViewDnr($prsn_id)
+    {
+        $this->data['ButtonMethod'] = 'SIMPAN';
+        $this->data['MethodForm'] = 'insertData';
+        $this->data['IdForm'] = 'prsnAddData';
+        $this->data['UrlForm'] = 'prsn';
+        $this->data['prsn_id'] = $prsn_id;
+
+        $this->data['Prsn'] = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('prsn_id', $prsn_id)->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_ord', 'desc')->get()->first();
+        $this->data['Dnrm'] = DnrmController::loadPrsn($prsn_id);
+        return view('prsn.detailDnr', $this->data);
+    }
+
+    public function viewDataSide($prsn_id)
+    {
+        $this->data['mobile'] = $this->isMobile();
+
+        $this->data['ButtonMethod'] = 'SIMPAN';
+        $this->data['MethodForm'] = 'insertData';
+        $this->data['IdForm'] = 'dnrkAddData';
+        $this->data['UrlForm'] = 'dnrk';
+        $this->data['prsn_id'] = $prsn_id;
+
+        $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
+
+        $this->data['Prsn'] = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('prsn_id', $prsn_id)->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_ord', 'desc')->get()->first();
+        
+        $this->data['Prsn']->total = DnrmController::countDnrPrsn($prsn_id);
+        $this->data['Prsn'] = PrsnController::setData($this->data['Prsn']);
+        $this->data['Dnrm'] = DnrmController::loadPrsn($prsn_id);
+
+        return view('prsn.detailSide', $this->data);
+    }
+
     static function loadPrsn($prsn_id)
     {
-        return PrsnController::setData(PrsnModel::leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('prsn_id', $prsn_id)->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis'])->orderBy('prsn_ord', 'desc')->get()->first());
+        return PrsnController::setData(PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('prsn_id', $prsn_id)->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_ord', 'desc')->get()->first());
     }
 
     public function searchData(Request $request) 
@@ -109,26 +206,29 @@ class PrsnController extends Controller
 
         $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
 
-        $search_key = $request->search_key;
-        $search_val = $request->search_val;
+        $search_nm = $request->search_nm;
+        $search_tgl = $request->search_tgl;
 
-        $this->data['search_key'] = $search_key;
-        $this->data['search_val'] = $search_val;
+        $this->data['search_nm'] = $search_nm;
+        $this->data['search_tgl'] = $search_tgl;
 
-        if ($search_val=="") {
-            $Prsn = PrsnModel::leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis'])->orderBy('prsn_ord', 'desc')->limit(100)->get();
+        if ($search_nm==""||$search_tgl=="") {
+            $Prsn = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_ord', 'desc')->limit(20)->get();
         }else{
-            $Prsn = PrsnModel::leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id');
+            $Prsn = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id');
     
-            if ($search_key=="Nama") {
-                $Prsn = $Prsn->where('prsn_nm', 'LIKE', '%'. $search_val .'%');
-            }elseif ($search_key=="NIK") {
-                $Prsn = $Prsn->where('prsn_nik', 'LIKE', '%'. $search_val .'%');
-            }elseif ($search_key=="Telp") {
-                $Prsn = $Prsn->where('prsn_telp', 'LIKE', '%'. $search_val .'%');
-            }
+            $Prsn = $Prsn->where(function($query) use ($search_nm){
+                $query->where('prsn_nm', 'like', '%'.$search_nm.'%');
+                $namaBaru = explode(" ", $search_nm);
+                if (count($namaBaru)>1) {
+                    for ($i=1; $i < count($namaBaru); $i++) { 
+                        $query->orWhere('prsn_nm', 'like', '%'.$namaBaru[$i].'%');
+                    }
+                }
+            })
+            ->where('prsn_tgllhr', $search_tgl);
     
-            $Prsn = $Prsn->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis'])->orderBy('prsn_ord', 'desc')->limit(20)->get();
+            $Prsn = $Prsn->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_nm', 'asc')->limit(20)->get();
         }
 
         $this->data['Prsn'] = PrsnController::setData($Prsn);
@@ -148,34 +248,81 @@ class PrsnController extends Controller
 
         $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
 
-        $search_key = $request->search_key;
-        $search_val = $request->search_val;
+        $search_nm = $request->search_nm;
+        $search_tgl = $request->search_tgl;
         $search_for = $request->search_for;
 
-        $this->data['search_key'] = $search_key;
-        $this->data['search_val'] = $search_val;
+        $this->data['search_nm'] = $search_nm;
+        $this->data['search_tgl'] = $search_tgl;
         $this->data['search_for'] = $search_for;
 
-        if ($search_val=="") {
-            $Prsn = PrsnModel::leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis'])->orderBy('prsn_ord', 'desc')->limit(100)->get();
+        if ($search_nm==""||$search_tgl=="") {
+            $Prsn = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis',  'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_ord', 'desc')->limit(20)->get();
         }else{
-            $Prsn = PrsnModel::leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id');
+            $Prsn = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id');
     
-            if ($search_key=="Nama") {
-                $Prsn = $Prsn->where('prsn_nm', 'LIKE', '%'. $search_val .'%');
-            }elseif ($search_key=="NIK") {
-                $Prsn = $Prsn->where('prsn_nik', 'LIKE', '%'. $search_val .'%');
-            }elseif ($search_key=="Telp") {
-                $Prsn = $Prsn->where('prsn_telp', 'LIKE', '%'. $search_val .'%');
-            }
+            $Prsn = $Prsn->where(function($query) use ($search_nm){
+                $query->where('prsn_nm', 'like', '%'.$search_nm.'%');
+                $namaBaru = explode(" ", $search_nm);
+                if (count($namaBaru)>1) {
+                    for ($i=1; $i < count($namaBaru); $i++) { 
+                        $query->orWhere('prsn_nm', 'like', '%'.$namaBaru[$i].'%');
+                    }
+                }
+            })
+            ->where('prsn_tgllhr', $search_tgl);
     
-            $Prsn = $Prsn->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis'])->orderBy('prsn_ord', 'desc')->limit(20)->get();
+            $Prsn = $Prsn->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_nm', 'asc')->limit(20)->get();
         }
 
         $this->data['Prsn'] = PrsnController::setData($Prsn);
 
         return view('prsn.searchDataDnr', $this->data);    
     }
+
+    public function searchDataSide(Request $request)
+    {
+        $this->data['Pgn'] = $this->getUser();
+        $this->data['search'] = "";
+
+        $this->data['ButtonMethod'] = 'SIMPAN';
+        $this->data['MethodForm'] = 'insertData';
+        $this->data['IdForm'] = 'prsnAddData';
+        $this->data['UrlForm'] = 'prsn';
+
+        $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
+
+        $search_nm = $request->search_nm;
+        $search_tgl = $request->search_tgl;
+        $search_for = $request->search_for;
+
+        $this->data['search_nm'] = $search_nm;
+        $this->data['search_tgl'] = $search_tgl;
+        $this->data['search_for'] = $search_for;
+
+        if ($search_nm==""||$search_tgl=="") {
+            $Prsn = [];
+        }else{
+            $Prsn = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id');
+    
+            $Prsn = $Prsn->where(function($query) use ($search_nm){
+                $query->where('prsn_nm', 'like', '%'.$search_nm.'%');
+                $namaBaru = explode(" ", $search_nm);
+                if (count($namaBaru)>1) {
+                    for ($i=1; $i < count($namaBaru); $i++) { 
+                        $query->orWhere('prsn_nm', 'like', '%'.$namaBaru[$i].'%');
+                    }
+                }
+            })
+            ->where('prsn_tgllhr', $search_tgl);
+    
+            $Prsn = $Prsn->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_nm', 'asc')->limit(5)->get();
+        }
+
+        $this->data['Prsn'] = PrsnController::setData($Prsn);
+
+        return view('prsn.dataSide', $this->data);
+    } 
 
     public function searchDataJson(Request $request){
         
@@ -184,7 +331,7 @@ class PrsnController extends Controller
 
         $this->data['search_val'] = $search_val;
 
-        $Prsn = PrsnModel::leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id');
+        $Prsn = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id');
     
         if ($search_key=="Nama") {
             $Prsn = $Prsn->where('prsn_nm', 'LIKE', '%'. $search_val .'%');
@@ -196,7 +343,7 @@ class PrsnController extends Controller
             $Prsn = $Prsn->where('prsn_id', $search_val);
         }
 
-        $Prsn = $Prsn->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis'])->orderBy('prsn_ord', 'desc')->get()->first();
+        $Prsn = $Prsn->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis',  'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_ord', 'desc')->get()->first();
 
         if ($Prsn==null) {
             $data['response'] = ['status' => 404, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Belum Ada'];
@@ -373,7 +520,7 @@ class PrsnController extends Controller
             
             
             $prsn_desa = $sheet[$i]["D"];
-            $Desa = DesaModel::where('id', $prsn_desa)->select(['id'])->orderBy('ord', 'asc')->get()->first();
+            $Desa = DesaModel::where('id', $prsn_desa)->select(['id', 'desa_kec'])->orderBy('ord', 'asc')->get()->first();
             if ($Desa==null) {
                 $error +=1;
                 array_push($rowError, [$sheet[$i]["B"], $i, "Desa Tidak Di Temukan"]);
@@ -390,7 +537,9 @@ class PrsnController extends Controller
                 continue;
             }
             
-
+            $prsn_kd = PrsnController::getKode($sheet[$i]["I"], $Desa->desa_kec);
+            // $prsn_bc = PrsnController::generateBarcodePri($prsn_kd);
+            $PrsnModel->prsn_kd = $prsn_kd;
             $PrsnModel->prsn_nm = addslashes($sheet[$i]["B"]);
             $PrsnModel->prsn_nik = $prsn_nik;
             $PrsnModel->prsn_tmptlhr = "";
@@ -401,6 +550,7 @@ class PrsnController extends Controller
             $PrsnModel->prsn_desa = $prsn_desa;
             $PrsnModel->prsn_wa = $prsn_wa;
             $PrsnModel->prsn_telp = $prsn_telp;
+            // $PrsnModel->prsn_bc = $prsn_bc;
             
             $PrsnModel->prsn_ucreate = $this->data['Pgn']->users_id;
             $PrsnModel->prsn_uupdate = $this->data['Pgn']->users_id;
@@ -419,38 +569,80 @@ class PrsnController extends Controller
 
     public function insertData(Request $request)
     {
-        header('Content-Type: application/json; charset=utf-8');
-        header("Access-Control-Allow-Origin: *");
-        header("Access-Control-Allow-Headers: *");         
+        // header('Content-Type: application/json; charset=utf-8');
+        // header("Access-Control-Allow-Origin: *");
+        // header("Access-Control-Allow-Headers: *");         
 
         $this->data['Pgn'] = $this->getUser();
 
         $PrsnModel = new PrsnModel();
 
-        $Prsn = PrsnModel::where('prsn_nik', $request->prsn_nik)->select(['prsn_id'])->orderBy('prsn_ord', 'desc')->get();
-        if (count($Prsn)>0) {
-            $data['response'] = ['status' => 409, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Berdasarkan NIK Sudah Ada'];
+        $prsn_id = $request->prsn_id;
+
+        $PrsnTelp = false;
+        
+        if ($request->prsn_telp=="") {
+            $PrsnTelp = true;
         }else{
-            $Prsn = PrsnModel::where('prsn_telp', $request->prsn_telp)->select(['prsn_id'])->orderBy('prsn_ord', 'desc')->get();
-            if (count($Prsn)>0) {
+            $Prsn = DB::table('prsn')->whereNotIn('prsn_id', [$prsn_id])->where('prsn_telp', $request->prsn_telp)->select(['prsn_id', 'prsn_nm'])->get()->toArray();
+            if($Prsn==null){
+                $PrsnTelp = true;
+            }
+        }
+
+        $PrsmSama = PrsnController::checkPrsn(addslashes($request->prsn_nm), $request->prsn_tgllhr);
+        if (count($PrsmSama)>0) {
+            $data['response'] = ['status' => 409, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Sudah Ada'];
+        }else{
+            if ($PrsnTelp!=true) {
                 $data['response'] = ['status' => 409, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Berdasarkan Nomor Telepon Sudah Ada'];
             }else{
+                $prsn_telp = null;
+                if($request->prsn_telp!=''){
+                    $prsn_telp = $request->prsn_telp;
+                }
+
+                $prsn_wa = "0";
+                if($request->prsn_wa!='1'){
+                    if($request->prsn_telp!=''){
+                        $prsn_wa = $request->prsn_wa;
+                    }
+                }
+    
+                $prsn_kd = PrsnController::getKode($request->prsn_tgllhr, $request->prsn_kec);
+                // $prsn_bc = PrsnController::generateBarcodePri($prsn_kd);
+                $PrsnModel->prsn_kd = $prsn_kd;
                 $PrsnModel->prsn_nm = addslashes($request->prsn_nm);
-                $PrsnModel->prsn_nik = $request->prsn_nik;
                 $PrsnModel->prsn_tmptlhr = addslashes($request->prsn_tmptlhr);
                 $PrsnModel->prsn_tgllhr = $request->prsn_tgllhr;
                 $PrsnModel->prsn_gol = $request->prsn_gol;
                 $PrsnModel->prsn_jk = $request->prsn_jk;
                 $PrsnModel->prsn_alt = addslashes($request->prsn_alt);
                 $PrsnModel->prsn_desa = $request->prsn_desa;
-                $PrsnModel->prsn_wa = $request->prsn_wa;
-                $PrsnModel->prsn_telp = $request->prsn_telp;
-                
-                $PrsnModel->prsn_ucreate = $this->data['Pgn']->users_id;
-                $PrsnModel->prsn_uupdate = $this->data['Pgn']->users_id;
-                
+                $PrsnModel->prsn_wa = $prsn_wa;
+                $PrsnModel->prsn_krj = $request->prsn_krj;
+                $PrsnModel->prsn_telp = $prsn_telp;
+                // $PrsnModel->prsn_bc = $prsn_bc;
                 $save = $PrsnModel->save();
                 if ($save) {
+                    $Prsn = PrsnModel::where('prsn_ord', $PrsnModel->prsn_id)->select(['prsn_id'])->get()->first();
+
+                    $deleteUsers = UsersModel::where('username', $prsn_kd)->delete([]);
+                    $Password = AIModel::getRandStrStat();
+                    $Users = UsersController::insertDataU(addslashes($request->prsn_nm), $Prsn->prsn_id, $prsn_kd, $Password);
+
+    
+                    $tujuan = "";
+                    $lengthTujuan = strlen($request->prsn_telp);
+                    if (substr($request->prsn_telp, 0, 2)=="08") {
+                        $tujuan = "62".substr($request->prsn_telp, 0, $lengthTujuan);
+                    }elseif (substr($request->prsn_telp, 0, 2)=="62") {
+                        $tujuan = $request->prsn_telp;
+                    }
+    
+                    if ($prsn_telp!=null) {
+                        $WaSend = WaSendController::sendDftr($prsn_kd, $Password, $tujuan);
+                    }
                     $data['response'] = [
                         'status' => 200,
                         'response' => "success",
@@ -462,33 +654,132 @@ class PrsnController extends Controller
                 }
             }
         }
+
+        
+        return response()->json($data, $data['response']['status']);
+    }
+
+    public function insertDataSide(Request $request)
+    {
+        // header('Content-Type: application/json; charset=utf-8');
+        // header("Access-Control-Allow-Origin: *");
+        // header("Access-Control-Allow-Headers: *");         
+
+        $this->data['Pgn'] = $this->getUser();
+
+        $PrsnModel = new PrsnModel();
+
+        $prsn_id = $request->prsn_id;
+
+        $PrsnTelp = false;
+        
+        if ($request->prsn_telp=="") {
+            $PrsnTelp = true;
+        }else{
+            $Prsn = DB::table('prsn')->whereNotIn('prsn_id', [$prsn_id])->where('prsn_telp', $request->prsn_telp)->select(['prsn_id', 'prsn_nm'])->get()->toArray();
+            if($Prsn==null){
+                $PrsnTelp = true;
+            }
+        }
+
+        $PrsmSama = PrsnController::checkPrsn(addslashes($request->prsn_nm), $request->prsn_tgllhr);
+        if (count($PrsmSama)>0) {
+            $data['response'] = ['status' => 409, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Sudah Ada'];
+        }else{
+            if ($PrsnTelp!=true) {
+                $data['response'] = ['status' => 409, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Berdasarkan Nomor Telepon Sudah Ada'];
+            }else{
+                $prsn_telp = null;
+                if($request->prsn_telp!=''){
+                    $prsn_telp = $request->prsn_telp;
+                }
+
+                $prsn_wa = "0";
+                if($request->prsn_wa!='1'){
+                    if($request->prsn_telp!=''){
+                        $prsn_wa = $request->prsn_wa;
+                    }
+                }
+    
+                $prsn_kd = PrsnController::getKode($request->prsn_tgllhr, $request->prsn_kec);
+                // $prsn_bc = PrsnController::generateBarcodePri($prsn_kd);
+                $PrsnModel->prsn_kd = $prsn_kd;
+                $PrsnModel->prsn_nm = addslashes($request->prsn_nm);
+                $PrsnModel->prsn_tmptlhr = addslashes($request->prsn_tmptlhr);
+                $PrsnModel->prsn_tgllhr = $request->prsn_tgllhr;
+                $PrsnModel->prsn_gol = $request->prsn_gol;
+                $PrsnModel->prsn_jk = $request->prsn_jk;
+                $PrsnModel->prsn_alt = addslashes($request->prsn_alt);
+                $PrsnModel->prsn_desa = $request->prsn_desa;
+                $PrsnModel->prsn_wa = $prsn_wa;
+                $PrsnModel->prsn_krj = $request->prsn_krj;
+                $PrsnModel->prsn_telp = $prsn_telp;
+                // $PrsnModel->prsn_bc = $prsn_bc;
+                $save = $PrsnModel->save();
+                if ($save) {
+                    $Prsn = PrsnModel::where('prsn_ord', $PrsnModel->prsn_id)->select(['prsn_id'])->get()->first();
+
+                    $deleteUsers = UsersModel::where('username', $prsn_kd)->delete([]);
+                
+                    $Password = AIModel::getRandStrStat();
+                    $Users = UsersController::insertDataU(addslashes($request->prsn_nm), $Prsn->prsn_id, $prsn_kd, $Password);
+    
+                    $tujuan = "";
+                    $lengthTujuan = strlen($request->prsn_telp);
+                    if (substr($request->prsn_telp, 0, 2)=="08") {
+                        $tujuan = "62".substr($request->prsn_telp, 0, $lengthTujuan);
+                    }elseif (substr($request->prsn_telp, 0, 2)=="62") {
+                        $tujuan = $request->prsn_telp;
+                    }
+    
+                    if ($prsn_telp!=null) {
+                        $WaSend = WaSendController::sendDftr($prsn_kd, $Password, $tujuan);
+                    }
+                    $data['response'] = [
+                        'status' => 200,
+                        'response' => "success",
+                        'type' => "success",
+                        'message' => "Data Personal Berhasil Disimpan",
+                        'id' => $Prsn->prsn_id
+                    ];
+                }else{
+                    $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Tidak Dapat Disimpan'];
+                }
+            }
+        }
+
+        
         return response()->json($data, $data['response']['status']);
     }
 
     public function insertDataReg(Request $request)
     {
+        Validator::extend('alpha_spaces', function($attribute, $value)
+        {
+            return preg_match('/^[\pL\s]+$/u', $value);
+        });
         $rules = [
-            'prsn_nm' => 'required',
-            'prsn_nik' => 'required|unique:prsn,prsn_nik',
+            'prsn_nm' => 'required|alpha_spaces',
             'prsn_tmptlhr' => 'required',
             'prsn_tgllhr' => 'required',
             'prsn_jk' => 'required',
             'prsn_alt' => 'required',
             'prsn_desa' => 'required',
             'prsn_wa' => 'required',
+            'prsn_krj' => 'required',
             'prsn_consent' => 'required',
-            'prsn_telp' => 'required|max:14|alpha_num|unique:prsn,prsn_telp',
+            'prsn_telp' => 'nullable|max:14|alpha_num|unique:prsn,prsn_telp',
             'captcha1' => 'required|captcha'
         ];
         $attributes = [
             'prsn_nm' => 'Nama Lengkap',
-            'prsn_nik' => 'NIK',
             'prsn_tmptlhr' => 'Tempat Lahir',
             'prsn_tgllhr' => 'Tanggal Lahir',
             'prsn_jk' => 'Jenis Kelamin',
             'prsn_alt' => 'Alamat',
             'prsn_desa' => 'Nama Desa',
             'prsn_telp' => 'Nomor Telepon',
+            'prsn_krj' => 'Pekerjaan',
             'prsn_consent' => 'Silahkan centang setujui dengan membaca form persetujuan yang telah disediakan',
             'captcha1' => 'Captha'
         ];
@@ -502,12 +793,26 @@ class PrsnController extends Controller
             if($request->prsn_gol!=''){
                 $prsn_gol = $request->prsn_gol;
             }
+
+            $prsn_telp = null;
+            if($request->prsn_telp!=''){
+                $prsn_telp = $request->prsn_telp;
+            }
+
             $prsn_wa = "0";
             if($request->prsn_wa!='1'){
-                $prsn_wa = $request->prsn_wa;
+                if($request->prsn_telp!=''){
+                    $prsn_wa = $request->prsn_wa;
+                }
             }
+            $PrsmSama = PrsnController::checkPrsn(addslashes($request->prsn_nm), $request->prsn_tgllhr);
+            if (count($PrsmSama)>0) {
+                return back()->with(['registerError'=> 'Data Personal Sudah Ada, Silahkan Hubungi Pihak UTD Untuk Melihat Data Anda']);
+            }
+            $prsn_kd = PrsnController::getKode($request->prsn_tgllhr, $request->prsn_kec);
+            // $prsn_bc = PrsnController::generateBarcode($prsn_kd);
+            $PrsnModel->prsn_kd = $prsn_kd;
             $PrsnModel->prsn_nm = addslashes($request->prsn_nm);
-            $PrsnModel->prsn_nik = $request->prsn_nik;
             $PrsnModel->prsn_tmptlhr = addslashes($request->prsn_tmptlhr);
             $PrsnModel->prsn_tgllhr = $request->prsn_tgllhr;
             $PrsnModel->prsn_gol = $prsn_gol;
@@ -515,14 +820,32 @@ class PrsnController extends Controller
             $PrsnModel->prsn_alt = addslashes($request->prsn_alt);
             $PrsnModel->prsn_desa = $request->prsn_desa;
             $PrsnModel->prsn_wa = $prsn_wa;
-            $PrsnModel->prsn_telp = $request->prsn_telp;
+            $PrsnModel->prsn_krj = $request->prsn_krj;
+            $PrsnModel->prsn_telp = $prsn_telp;
+            // $PrsnModel->prsn_bc = $prsn_bc;
             
             
             $save = $PrsnModel->save();
             if ($save) {
                 $Prsn = PrsnModel::where('prsn_ord', $PrsnModel->prsn_id)->select(['prsn_id'])->get()->first();
-    
-                $token = PrsnController::token($Prsn->prsn_id);
+                $deleteUsers = UsersModel::where('username', $prsn_kd)->delete([]);
+                
+                $Password = AIModel::getRandStrStat();
+                $token = PrsnController::token($Prsn->prsn_id, $Password, $prsn_kd);
+                $Users = UsersController::insertDataU(addslashes($request->prsn_nm), $Prsn->prsn_id, $prsn_kd, $Password);
+
+                $tujuan = "";
+                $lengthTujuan = strlen($request->prsn_telp);
+                if (substr($request->prsn_telp, 0, 2)=="08") {
+                    $tujuan = "62".substr($request->prsn_telp, 0, $lengthTujuan);
+                }elseif (substr($request->prsn_telp, 0, 2)=="62") {
+                    $tujuan = $request->prsn_telp;
+                }
+
+                if ($prsn_telp!=null) {
+                    $WaSend = WaSendController::sendDftr($prsn_kd, $Password, $tujuan);
+                }
+
                 return redirect()->to(url('register/success/'.$token));
             }else{
                 return back()->with(['registerError'=> 'Data Personal Tidak Dapat Disimpan']);
@@ -531,15 +854,122 @@ class PrsnController extends Controller
 
     }
 
-    static function token($id)
+    public function testSearchPrsn(Request $request)
+    {
+        dd($request->get('nama'), $request->get('tgl'), $request->get('jk'), PrsnController::checkPrsn($request->get('nama'), $request->get('tgl'), $request->get('jk')));
+    }
+
+    public function testSearchPrsnByTgl(Request $request)
+    {
+        $Prsn = DB::table('prsn')->where('prsn_tgllhr', $request->get('tgl'))->orderBy('prsn_ord', 'asc')
+        ->get();
+        dd($Prsn);
+    }
+
+    public function testSearchPrsnByLastKd(Request $request)
+    {
+        $Prsn = DB::table('prsn')->where('prsn_kd', 'like', '%'.$request->get('kd'))->orderBy('prsn_ord', 'asc')
+        ->get();
+        dd($Prsn);
+    }
+
+    public function testSearchPrsnBySameDate()
+    {
+        $Prsn = DB::table('prsn')
+        ->select('prsn_tgllhr', DB::raw('count(*) as total'))
+        ->groupBy('prsn_tgllhr')->orderBy('total', 'desc')
+        ->get();
+        dd($Prsn);
+    }
+
+    static function checkPrsn($nama, $tgl_lhr)
+    {
+        return DB::table('prsn')
+        ->where(function($query) use ($nama){
+            $query->where('prsn_nm', 'like', '%'.$nama.'%');
+            $namaBaru = explode(" ", $nama);
+            if (count($namaBaru)>1) {
+                for ($i=1; $i < count($namaBaru); $i++) { 
+                    $query->orWhere('prsn_nm', 'like', '%'.$namaBaru[$i].'%');
+                }
+            }
+        })
+        ->where('prsn_tgllhr', $tgl_lhr)->orderBy('prsn_nm', 'asc')
+        ->limit(20)
+        ->get();
+    }
+
+    static function token($id, $pass = '', $kd = '')
     {
         $expired_time = time() + (1440 * 30); // 1 hari token
         $payload = [
             'id' => $id,
             'exp' => $expired_time
         ];
+        if ($pass!=''&&$kd!='') {
+            $payload = [
+                'id' => $id,
+                'pass' => $pass,
+                'kd' => $kd,
+                'exp' => $expired_time
+            ];
+        }
         
         return JWT::encode($payload, env('ACCESS_TOKEN_SECRET'), 'HS256');
+    }
+
+    static function getKode($prsn_tgllhr, $kec)
+    {
+        $Kode = null;
+        $KdSeg = '01';
+        $prsn_kd = 0;
+        $Seg = SegModel::leftJoin('segkec', 'seg.seg_id', '=', 'segkec.segkec_seg')->where('segkec_kec', $kec)->select(['seg_kd'])->get()->first();
+        if ($Seg!=null) {
+            $KdSeg = $Seg['seg_kd'];
+        }
+
+        $Kode = $KdSeg.(string)date("dmy", strtotime($prsn_tgllhr));
+
+        $Prsn = PrsnModel::where('prsn_kd', 'LIKE',  $Kode .'%')->select(['prsn_id', 'prsn_kd'])->orderBy('prsn_ord', 'desc')->get()->first();
+        if ($Prsn==null) {
+            $Kode = $Kode."001";
+        }else{
+            $prsn_kd = (int)substr($Prsn['prsn_kd'], 8, 10)+1;
+            for ($i=0; $i < 4 - strlen((string)$prsn_kd); $i++) { 
+                $prsn_kd = "0".(string)$prsn_kd;
+            }
+
+            $Kode = $Kode.$prsn_kd;
+        }
+
+        return $Kode;
+    }
+
+    public function changeKode()
+    {
+        $success = 0;
+        $error = 0;
+        $this->data['Prsn'] = PrsnModel::leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->select(['prsn_id', 'prsn_nm', 'prsn_kd', 'prsn_tgllhr', 'kec.id as kec_id', 'desa.id as desa_id'])->orderBy('prsn_ord', 'desc')->get();
+
+        for ($i=0; $i < count($this->data['Prsn']); $i++) { 
+            if ($this->data['Prsn'][$i]['prsn_kd']!="") {
+                continue;
+            }
+
+            $prsn_kd = PrsnController::getKode($this->data['Prsn'][$i]['prsn_tgllhr'], $this->data['Prsn'][$i]['kec_id']);
+            $prsn_bc = PrsnController::generateBarcode($prsn_kd);
+            try {
+
+                $update = DB::table('prsn')->where('prsn_id', $this->data['Prsn'][$i]['prsn_id'])->update([
+                    'prsn_kd' => $prsn_kd,
+                ]);
+                $success +=1;
+            } catch (\Exception $e) {
+                $error +=1;
+            }
+        }
+
+        dd($success, $error);
     }
 
     static function insertDataDnr($request, $Pgn)
@@ -554,6 +984,9 @@ class PrsnController extends Controller
             if (count($Prsn)>0) {
                 return [false, 'Data Personal Berdasarkan Nomor Telepon Sudah Ada'];
             }else{
+                $prsn_kd = PrsnController::getKode($request->prsn_tgllhr, $request->prsn_kec);
+                // $prsn_bc = PrsnController::generateBarcodePri($prsn_kd);
+                $PrsnModel->prsn_kd = $prsn_kd;
                 $PrsnModel->prsn_nm = addslashes($request->prsn_nm);
                 $PrsnModel->prsn_nik = $request->prsn_nik;
                 $PrsnModel->prsn_tmptlhr = addslashes($request->prsn_tmptlhr);
@@ -563,13 +996,17 @@ class PrsnController extends Controller
                 $PrsnModel->prsn_alt = addslashes($request->prsn_alt);
                 $PrsnModel->prsn_desa = $request->prsn_desa;
                 $PrsnModel->prsn_wa = '0';
-                
+                $PrsnModel->prsn_krj = $request->prsn_krj;
+                // $PrsnModel->prsn_bc = $prsn_bc;
                 $PrsnModel->prsn_ucreate = $Pgn->users_id;
                 $PrsnModel->prsn_uupdate = $Pgn->users_id;
                 
                 $save = $PrsnModel->save();
                 if ($save) {
                     $Prsn = PrsnModel::where('prsn_ord', $PrsnModel->prsn_id)->select(['prsn_id'])->get()->first();
+                    $Password = AIModel::getRandStrStat();
+                    $deleteUsers = UsersModel::where('username', $prsn_kd)->delete([]);
+                    $Users = UsersController::insertDataU(addslashes($request->prsn_nm), $Prsn->prsn_id, $prsn_kd, $Password);
                     return [true, $Prsn->prsn_id];
                 }else{
                     return [false, 'Data Personal Tidak Dapat Disimpan'];
@@ -600,7 +1037,7 @@ class PrsnController extends Controller
                         'prsn_jk' => $request->prsn_jk,
                         'prsn_alt' => addslashes($request->prsn_alt),
                         'prsn_desa' => $request->prsn_desa,
-                        
+                        'prsn_krj' => $request->prsn_krj,
                         'prsn_uupdate' => $Pgn->users_id
                     ]);
                     return [true];
@@ -623,6 +1060,9 @@ class PrsnController extends Controller
             if (count($Prsn)>0) {
                 return [false, 'Data Personal Berdasarkan Nomor Telepon Sudah Ada'];
             }else{
+                $prsn_kd = PrsnController::getKode($request->prsn_tgllhr, $request->prsn_kec);
+                // $prsn_bc = PrsnController::generateBarcodePri($prsn_kd);
+                $PrsnModel->prsn_kd = $prsn_kd;
                 $PrsnModel->prsn_nm = addslashes($request->ktk_prsn_nm);
                 $PrsnModel->prsn_nik = $request->ktk_prsn_nik;
                 $PrsnModel->prsn_tmptlhr = addslashes($request->ktk_prsn_tmptlhr);
@@ -632,13 +1072,17 @@ class PrsnController extends Controller
                 $PrsnModel->prsn_desa = $request->ktk_prsn_desa;
                 $PrsnModel->prsn_telp = $request->ktk_prsn_telp;
                 $PrsnModel->prsn_wa = $request->ktk_prsn_wa;
-                
+                $PrsnModel->prsn_krj = $request->ktk_prsn_krj;
+                // $PrsnModel->prsn_bc = $prsn_bc;
                 $PrsnModel->prsn_ucreate = $Pgn->users_id;
                 $PrsnModel->prsn_uupdate = $Pgn->users_id;
                 
                 $save = $PrsnModel->save();
                 if ($save) {
                     $Prsn = PrsnModel::where('prsn_ord', $PrsnModel->prsn_id)->select(['prsn_id'])->get()->first();
+                    $Password = AIModel::getRandStrStat();
+                    $deleteUsers = UsersModel::where('username', $prsn_kd)->delete([]);
+                    $Users = UsersController::insertDataU(addslashes($request->prsn_nm), $Prsn->prsn_id, $prsn_kd, $Password);
                     return [true, $Prsn->prsn_id];
                 }else{
                     return [false, 'Data Personal Tidak Dapat Disimpan'];
@@ -670,7 +1114,7 @@ class PrsnController extends Controller
                         'prsn_desa' => $request->ktk_prsn_desa,
                         'prsn_telp' => $request->ktk_prsn_telp,
                         'prsn_wa' => $request->ktk_prsn_wa,
-                        
+                        'prsn_krj' => $request->ktk_prsn_krj,
                         'prsn_uupdate' => $Pgn->users_id
                     ]);
                     return [true];
@@ -693,38 +1137,43 @@ class PrsnController extends Controller
 
         $prsn_id = $request->prsn_id;
 
+        $PrsnTelp = false;
         
-        $Prsn = DB::table('prsn')->whereNotIn('prsn_id', [$prsn_id])->where('prsn_nik', $request->prsn_nik)->select()->get()->toArray();
-        if ($Prsn!=null) {
-            $data['response'] = ['status' => 409, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Berdasarkan NIK Sudah Ada'];
+        if ($request->prsn_telp=="") {
+            $PrsnTelp = true;
         }else{
             $Prsn = DB::table('prsn')->whereNotIn('prsn_id', [$prsn_id])->where('prsn_telp', $request->prsn_telp)->select(['prsn_id', 'prsn_nm'])->get()->toArray();
-            if ($Prsn!=null) {
-                $data['response'] = ['status' => 409, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Berdasarkan Nomor Telepon Sudah Ada'];
-            }else{
-                try {
-                    $update = DB::table('prsn')->where('prsn_id', $prsn_id)->update([
-                        'prsn_nm' => addslashes($request->prsn_nm),
-                        'prsn_nik' => $request->prsn_nik,
-                        'prsn_tmptlhr' => addslashes($request->prsn_tmptlhr),
-                        'prsn_tgllhr' => $request->prsn_tgllhr,
-                        'prsn_gol' => $request->prsn_gol,
-                        'prsn_jk' => $request->prsn_jk,
-                        'prsn_alt' => addslashes($request->prsn_alt),
-                        'prsn_desa' => $request->prsn_desa,
-                        'prsn_wa' => $request->prsn_wa,
-                        'prsn_telp' => $request->prsn_telp,
-                        'prsn_uupdate' => $this->data['Pgn']->users_id
-                    ]);
-                    $data['response'] = [
-                        'status' => 200,
-                        'response' => "success",
-                        'type' => "success",
-                        'message' => "Data Personal Berhasil Diubah"
-                    ];
-                } catch (\Exception $e) {
-                    $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Tidak Dapat Diubah, Pesan '.$e->getMessage()];
-                }
+            if($Prsn==null){
+                $PrsnTelp = true;
+            }
+        }
+
+        if ($PrsnTelp!=true) {
+            $data['response'] = ['status' => 409, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Berdasarkan Nomor Telepon Sudah Ada'];
+        }else{
+            try {
+                $update = DB::table('prsn')->where('prsn_id', $prsn_id)->update([
+                    'prsn_nm' => addslashes($request->prsn_nm),
+                    'prsn_nik' => $request->prsn_nik,
+                    'prsn_tmptlhr' => addslashes($request->prsn_tmptlhr),
+                    'prsn_tgllhr' => $request->prsn_tgllhr,
+                    'prsn_gol' => $request->prsn_gol,
+                    'prsn_jk' => $request->prsn_jk,
+                    'prsn_alt' => addslashes($request->prsn_alt),
+                    'prsn_desa' => $request->prsn_desa,
+                    'prsn_wa' => $request->prsn_wa,
+                    'prsn_telp' => $request->prsn_telp,
+                    'prsn_krj' => $request->prsn_krj,
+                    'prsn_uupdate' => $this->data['Pgn']->users_id
+                ]);
+                $data['response'] = [
+                    'status' => 200,
+                    'response' => "success",
+                    'type' => "success",
+                    'message' => "Data Personal Berhasil Diubah"
+                ];
+            } catch (\Exception $e) {
+                $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Tidak Dapat Diubah, Pesan '.$e->getMessage()];
             }
         }
 
@@ -738,8 +1187,10 @@ class PrsnController extends Controller
         header("Access-Control-Allow-Headers: *");
 
         $PrsnModel = new PrsnModel();
+        $UsersModel = new UsersModel();
 
         $delete = $PrsnModel::where('prsn_id', $prsn_id)->delete([]);
+        $deleteUsers = $UsersModel::where('users_prsn', $prsn_id)->delete([]);
         if ($delete) {
             $data['response'] = [
                 'status' => 200,
@@ -831,5 +1282,92 @@ class PrsnController extends Controller
     public function reloadCaptcha()
     {
         return response()->json(['captcha'=> captcha_img('flat')]);
+    }
+
+    static function generateBarcode($kd = '')
+    {
+        $redColor = [0,0,0];
+        $generator = new BarcodeGeneratorPNG();
+        $bc = 'bc-'.$kd.'-'.date("YmdHis").'.png';
+        
+        file_put_contents('./bc/'.$bc, $generator->getBarcode((string)$kd, $generator::TYPE_CODE_128, 3, 50, $redColor));
+
+        return $bc;
+    }
+
+    static function generateBarcodePri($kd = '')
+    {
+        $redColor = [0,0,0];
+        $generator = new BarcodeGeneratorPNG();
+        $bc = 'bc-'.$kd.'-'.date("YmdHis").'.png';
+        
+        file_put_contents('../bc/'.$bc, $generator->getBarcode((string)$kd, $generator::TYPE_CODE_128, 3, 50, $redColor));
+
+        return $bc;
+    }
+
+    public function cetakKrtAdm($id)
+    {
+        $token = PrsnController::token($id);
+        return redirect()->to('https://satudarahparigimoutong.com/printCard/'.$token);
+    }
+
+    public function verificationData($prsn_id)
+    {
+        // header('Content-Type: application/json; charset=utf-8');
+        // header("Access-Control-Allow-Origin: *");
+        // header("Access-Control-Allow-Headers: *");
+        $PrsnModel = new PrsnModel();
+
+        $Prsn = PrsnModel::where('prsn_id', $prsn_id)->select(['prsn_kd'])->orderBy('prsn_ord', 'desc')->get()->first();
+        if ($Prsn==null) {
+            $data['response'] = ['status' => 404, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Tidak Ditemukan'];
+        }else{
+            $prsn_bc = PrsnController::generateBarcodePri($Prsn->prsn_kd);
+            // $PrsnModel->prsn_bc = $prsn_bc;
+            try {
+
+                $update = DB::table('prsn')->where('prsn_id', $prsn_id)->update([
+                    'prsn_bc' => $prsn_bc
+                ]);
+                $data['response'] = [
+                    'status' => 200,
+                    'response' => "success",
+                    'type' => "success",
+                    'message' => "Personal Berhasil Diverifikasi"
+                ];
+            } catch (\Exception $e) {
+                $data['response'] = ['status' => 404, 'response' => 'error','type' => "danger", 'message' => 'Personal Tidak Dapat Diverifikasi'];
+            }
+        }
+        return response()->json($data, $data['response']['status']);
+    }
+
+    public function resetUserAndSendWa($prsn_id)
+    {
+        $Prsn = PrsnModel::where('prsn_id', $prsn_id)->select(['prsn_id', 'prsn_nm', 'prsn_telp', 'prsn_kd'])->orderBy('prsn_ord', 'desc')->get()->first();
+        if ($Prsn==null) {
+            $data['response'] = ['status' => 404, 'response' => 'error','type' => "danger", 'message' => 'Data Personal Tidak Ditemukan'];
+        }else{
+            $deleteUsers = UsersModel::where('username', $Prsn->prsn_kd)->delete([]);
+            $Password = AIModel::getRandStrStat();
+            $Users = UsersController::insertDataU(addslashes($Prsn->prsn_nm), $Prsn->prsn_id, $Prsn->prsn_kd, $Password);
+
+            $tujuan = "";
+            $lengthTujuan = strlen($Prsn->prsn_telp);
+            if (substr($Prsn->prsn_telp, 0, 2)=="08") {
+                $tujuan = "62".substr($Prsn->prsn_telp, 0, $lengthTujuan);
+            }elseif (substr($Prsn->prsn_telp, 0, 2)=="62") {
+                $tujuan = $Prsn->prsn_telp;
+            }
+            $WaSend = WaSendController::sendDftr($Prsn->prsn_kd, $Password, $tujuan);
+            $data['response'] = [
+                'status' => 200,
+                'response' => "success",
+                'type' => "success",
+                'message' => "Pesan Konfirmasi Pengguna Personal Telah Dikirimkan"
+            ];
+        }
+        return response()->json($data, $data['response']['status']);
     }
 }

@@ -19,5 +19,5 @@ class UsersModel extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['users_id', 'username', 'password', 'users_tipe', 'users_act', 'users_wa'];
+    protected $fillable = ['users_id', ' users_nm', 'username', 'password', 'users_tipe', 'users_act', 'users_org', 'users_prsn', 'users_ucreate', 'users_uupdate'];
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AIModel;
 use App\Models\DnrmModel;
+use App\Models\DnrModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -26,6 +27,50 @@ class DnrmController extends Controller
         ];
     }
 
+    public function index()
+    {
+        $this->data['mobile'] = $this->isMobile();
+
+        $this->data['Pgn'] = $this->getUser();
+        if ($this->data['Pgn']->users_tipe!="UTD") {
+            return redirect()->intended();
+        }
+
+        $this->data['ButtonMethod'] = 'SIMPAN';
+        $this->data['MethodForm'] = 'insertData';
+        $this->data['IdForm'] = 'dnrmAddData';
+        $this->data['UrlForm'] = 'dnrm';
+
+        $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
+        
+        $this->data['Dnrm'] = DnrmModel::leftJoin('org', 'dnrm.dnrm_org', '=', 'org.org_id')->leftJoin('prsn', 'dnrm.dnrm_prsn', '=', 'prsn.prsn_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->where('dnrm_org', $this->data['Pgn']->users_org)->where('dnrm_kat', 'M')->select(['dnrm_id', 'org_nm', 'dnrm_jmlh', 'dnrm_tgl', 'dnrm_trm', 'prsn_nm', 'prsn_nik', 'gol_nm', 'dnrm_org', 'prsn_tgllhr', 'prsn_id', 'prsn_kd'])->orderBy('dnrm_ord', 'desc')->limit(20)->get();
+        $this->data['Dnrm'] = DnrmController::setData($this->data['Dnrm']);
+
+        $this->data['Org'] = OrgController::getDataByRs('1');
+        $this->data['Gol'] = GolController::getDataActStat();
+        $this->data['Kec'] = KecController::getData();
+        $this->data['Krj'] = KrjController::getDataActStat();
+
+        return view('dnrm.index', $this->data);
+    }
+
+    public function load()
+    {
+        $this->data['Pgn'] = $this->getUser();
+
+        $this->data['ButtonMethod'] = 'SIMPAN';
+        $this->data['MethodForm'] = 'insertData';
+        $this->data['IdForm'] = 'dnrmAddData';
+        $this->data['UrlForm'] = 'dnrm';
+
+        $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
+
+        $this->data['Dnrm'] = DnrmModel::leftJoin('org', 'dnrm.dnrm_org', '=', 'org.org_id')->leftJoin('prsn', 'dnrm.dnrm_prsn', '=', 'prsn.prsn_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->where('dnrm_org', $this->data['Pgn']->users_org)->where('dnrm_kat', 'M')->select(['dnrm_id', 'org_nm', 'dnrm_jmlh', 'dnrm_tgl', 'dnrm_trm', 'prsn_nm', 'prsn_nik', 'gol_nm', 'dnrm_org', 'prsn_tgllhr', 'prsn_id', 'prsn_kd'])->orderBy('dnrm_ord', 'desc')->limit(20)->get();
+        $this->data['Dnrm'] = DnrmController::setData($this->data['Dnrm']);
+
+        return view('dnrm.data', $this->data);
+    }
+
     public function loadDnrp($dnrm_dnr)
     {
         $this->data['Pgn'] = $this->getUser();
@@ -38,7 +83,7 @@ class DnrmController extends Controller
 
         $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
 
-        $this->data['Dnrm'] = DnrmModel::leftJoin('org', 'dnrm.dnrm_org', '=', 'org.org_id')->leftJoin('prsn', 'dnrm.dnrm_prsn', '=', 'prsn.prsn_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnrm_dnr', $dnrm_dnr)->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'dnrm_id', 'dnrm_dnr', 'dnrm_jmlh', 'dnrm_tgl', 'dnrm_trm', 'org_nm', 'dnrm_prsn', 'dnrm_org'])->orderBy('dnrm_ord', 'desc')->get();
+        $this->data['Dnrm'] = DnrmModel::leftJoin('org', 'dnrm.dnrm_org', '=', 'org.org_id')->leftJoin('prsn', 'dnrm.dnrm_prsn', '=', 'prsn.prsn_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnrm_dnr', $dnrm_dnr)->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'dnrm_id', 'dnrm_dnr', 'dnrm_jmlh', 'dnrm_tgl', 'dnrm_trm', 'org_nm', 'dnrm_prsn', 'dnrm_org', 'prsn_kd'])->orderBy('dnrm_ord', 'desc')->get();
         $this->data['Dnrm'] = DnrmController::setData($this->data['Dnrm']);
 
         return view('dnrp.detailDnr', $this->data);
@@ -50,21 +95,56 @@ class DnrmController extends Controller
 
         $this->data['ButtonMethod'] = 'SIMPAN';
         $this->data['MethodForm'] = 'insertData';
-        $this->data['IdForm'] = 'dnrmAddData';
-        $this->data['UrlForm'] = 'dnrm';
+        $this->data['IdForm'] = 'dnrkAddData';
+        $this->data['UrlForm'] = 'dnrk';
         $this->data['dnrm_dnr'] = $dnrm_dnr;
 
         $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
 
-        $this->data['Dnrm'] = DnrmModel::leftJoin('org', 'dnrm.dnrm_org', '=', 'org.org_id')->leftJoin('prsn', 'dnrm.dnrm_prsn', '=', 'prsn.prsn_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnrm_dnr', $dnrm_dnr)->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'dnrm_id', 'dnrm_dnr', 'dnrm_jmlh', 'dnrm_tgl', 'dnrm_trm', 'org_nm', 'dnrm_prsn', 'dnrm_org'])->orderBy('dnrm_ord', 'desc')->get();
+        $this->data['Dnrk'] = DnrModel::leftJoin('desa', 'dnr.dnr_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnr_id', $dnrm_dnr)->select(['dnr_id', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'desa.id as desa_id', 'kec.id as kec_id', 'dnr_bth', 'dnr_tgl', 'dnr_keg', 'dnr_nm', 'dnr_telp', 'dnr_tmpt', 'dnr_send'])->orderBy('dnr_ord', 'desc')->get()->first();
+        
+        $this->data['Dnrm'] = DnrmModel::leftJoin('prsn', 'dnrm.dnrm_prsn', '=', 'prsn.prsn_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnrm_dnr', $dnrm_dnr)->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'dnrm_id', 'dnrm_dnr', 'dnrm_jmlh', 'dnrm_tgl', 'dnrm_prsn', 'prsn_kd'])->orderBy('dnrm_ord', 'desc')->get();
         $this->data['Dnrm'] = DnrmController::setData($this->data['Dnrm']);
 
-        return view('dnrp.detailDnr', $this->data);
+        return view('dnrk.detailDnr', $this->data);
     }
 
     static function countDnr($dnrm_dnr)
     {
         return DB::table('dnrm')->where('dnrm_dnr', $dnrm_dnr)->sum('dnrm_jmlh');
+    }
+
+    static function countDnrPrsn($dnrm_prsn)
+    {
+        return DB::table('dnrm')->where('dnrm_prsn', $dnrm_prsn)->count('dnrm_prsn');
+    }
+
+    static function loadPrsn($dnrm_prsn)
+    {
+        $Dnrm = DnrmModel::leftJoin('dnr', 'dnrm.dnrm_dnr', '=', 'dnr.dnr_id')->leftJoin('org', 'dnr.dnr_org', '=', 'org.org_id')->where('dnrm_prsn', $dnrm_prsn)->select(['dnrm_id', 'dnrm_kat', 'dnrm_jmlh', 'dnrm_tgl', 'dnrm_lok', 'dnr_nm', 'org_nm', 'dnrm_lok'])->orderBy('dnrm_ord', 'desc')->get();
+        if (count($Dnrm)==0) {
+            return $Dnrm;
+        }
+
+        for ($i=0; $i < count($Dnrm); $i++) { 
+           
+            $Dnrm[$i]->dnrm_katAltT = "Personal";
+            if ($Dnrm[$i]->dnrm_kat=='M') {
+                $Dnrm[$i]->dnrm_katAltT = "Mandiri";
+            }elseif ($Dnrm[$i]->dnrm_kat=='K') {
+                $Dnrm[$i]->dnrm_katAltT = "Kegiatan";
+            }
+
+            $Dnrm[$i]->dnrm_tglAltT = "";
+            if ($Dnrm[$i]->dnrm_tgl!='0000-00-00') {
+                $Dnrm[$i]->dnrm_tglAltT = ucwords(strtolower(AIModel::changeDateNFSt($Dnrm[$i]->dnrm_tgl)));
+            }
+
+            if ($Dnrm[$i]->dnrm_kat=="K") {
+                # code...
+            }
+        }
+        return $Dnrm;
     }
 
     public function insertData(Request $request) {
@@ -90,7 +170,7 @@ class DnrmController extends Controller
         $Prsn = [];
         $dnrm_prsn = '';
         if ($request->prsn_id!=''||$request->prsn_id!=null) {
-            $Dnrm = DnrmModel::where('dnrm_prsn', $request->prsn_id)->select(['dnrm_prsn'])->orderBy('dnrm_ord', 'desc')->get()->first();
+            $Dnrm = DnrmModel::where('dnrm_prsn', $request->prsn_id)->where('dnrm_dnr', $request->dnrm_dnr)->select(['dnrm_prsn'])->orderBy('dnrm_ord', 'desc')->get()->first();
         }
         if ($Dnrm==null) {
             if ($request->prsn_id==''||$request->prsn_id==null) {
@@ -198,42 +278,31 @@ class DnrmController extends Controller
 
         $this->data['Pgn'] = $this->getUser();
         $Prsn = [];
-        $dnrm_prsn = '';
+
         if ($request->prsn_id!=''||$request->prsn_id!=null) {
-            $Dnrm = DnrmModel::where('dnrm_prsn', $request->prsn_id)->select(['dnrm_prsn'])->orderBy('dnrm_ord', 'desc')->get()->first();
+            $Dnrm = DnrmModel::where('dnrm_prsn', $request->prsn_id)->where('dnrm_dnr', $request->dnr_id)->select(['dnrm_prsn'])->orderBy('dnrm_ord', 'desc')->get()->first();
         }
         if ($Dnrm==null) {
-            if ($request->prsn_id==''||$request->prsn_id==null) {
-                $Prsn = PrsnController::insertDataDnr($request, $this->data['Pgn']);
-                $dnrm_prsn = $Prsn[1];
+            $DnrmModel->dnrm_jmlh = $request->dnrm_jmlh;
+            $DnrmModel->dnrm_tgl = $request->dnrm_tgl;
+            $DnrmModel->dnrm_prsn = $request->prsn_id;
+            $DnrmModel->dnrm_dnr = $request->dnr_id;
+            $DnrmModel->dnrm_kat = "K";
+            
+            $DnrmModel->dnrm_ucreate = $this->data['Pgn']->users_id;
+            $DnrmModel->dnrm_uupdate = $this->data['Pgn']->users_id;
+
+            $save = $DnrmModel->save();
+            if ($save) {
+
+                $data['response'] = [
+                    'status' => 200,
+                    'response' => "success",
+                    'type' => "success",
+                    'message' => "Data Donor Darah Berhasil Disimpan"
+                ];
             }else{
-                $Prsn = PrsnController::updateDataDnr($request, $this->data['Pgn']);
-                $dnrm_prsn = $request->prsn_id;
-            }
-            if ($Prsn[0]) {
-                $DnrmModel->dnrm_jmlh = $request->dnrm_jmlh;
-                $DnrmModel->dnrm_tgl = $request->dnrm_tgl;
-                $DnrmModel->dnrm_prsn = $dnrm_prsn;
-                $DnrmModel->dnrm_dnr = $request->dnrm_dnr;
-                $DnrmModel->dnrm_kat = "P";
-                
-                $DnrmModel->dnrm_ucreate = $this->data['Pgn']->users_id;
-                $DnrmModel->dnrm_uupdate = $this->data['Pgn']->users_id;
-    
-                $save = $DnrmModel->save();
-                if ($save) {
-    
-                    $data['response'] = [
-                        'status' => 200,
-                        'response' => "success",
-                        'type' => "success",
-                        'message' => "Data Donor Darah Berhasil Disimpan"
-                    ];
-                }else{
-                    $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => 'Data Donor Darah Tidak Dapat Disimpan'];
-                }
-            }else{
-                $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => $Prsn[1]];
+                $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => 'Data Donor Darah Tidak Dapat Disimpan'];
             }
         }else{
             $data['response'] = ['status' => 409, 'response' => 'error','type' => "danger", 'message' => 'Data Pendonor Sudah Ada'];
@@ -278,6 +347,80 @@ class DnrmController extends Controller
                 ];
             } catch (\Exception $e) {
                 $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => 'Data Donor Darah Tidak Dapat Disimpan'];
+            }
+        }else{
+            $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => $Prsn[1]];
+        }
+        return response()->json($data, $data['response']['status']);
+    }
+
+    public function insertDataM(Request $request)
+    {
+        // header('Content-Type: application/json; charset=utf-8');
+        // header("Access-Control-Allow-Origin: *");
+        // header("Access-Control-Allow-Headers: *");
+
+        $DnrmModel = new DnrmModel();
+
+        $this->data['Pgn'] = $this->getUser();
+        $DnrmModel->dnrm_prsn = $request->dnrm_prsn;
+        $DnrmModel->dnrm_jmlh = $request->dnrm_jmlh;
+        $DnrmModel->dnrm_tgl = $request->dnrm_tgl;
+        $DnrmModel->dnrm_lok = $request->dnrm_lok;
+        $DnrmModel->dnrm_kat = "M";
+        $DnrmModel->dnrm_ucreate = $this->data['Pgn']->users_id;
+        $DnrmModel->dnrm_uupdate = $this->data['Pgn']->users_id;
+
+        $save = $DnrmModel->save();
+        if ($save) {
+            $data['response'] = [
+                'status' => 200,
+                'response' => "success",
+                'type' => "success",
+                'message' => "Data Donor Darah Mandiri Berhasil Disimpan"
+            ];
+        }else{
+            $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => 'Data Donor Darah Mandiri Tidak Dapat Disimpan'];
+        }
+        return response()->json($data, $data['response']['status']);
+    }
+
+    public function updateDataM(Request $request)
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Headers: *");
+
+        $DnrmModel = new DnrmModel();
+
+        $this->data['Pgn'] = $this->getUser();
+        $Prsn = [];
+        $prsn_id = '';
+        if ($request->prsn_id==''||$request->prsn_id==null) {
+            $Prsn = PrsnController::insertDataDnr($request, $this->data['Pgn']);
+            $prsn_id = $Prsn[1];
+        }else{
+            $Prsn = PrsnController::updateDataDnr($request, $this->data['Pgn']);
+            $prsn_id = $request->prsn_id;
+        }
+
+        if ($Prsn[0]) {
+            try {
+                $update = DB::table('dnrm')->where('dnrm_id', $request->dnrm_id)->update([
+                    'dnrm_prsn' => $prsn_id,
+                    'dnrm_jmlh' => $request->dnrm_jmlh,
+                    'dnrm_tgl' => $request->dnrm_tgl,
+                    'dnrm_uupdate' => $this->data['Pgn']->users_id
+                ]);
+
+                $data['response'] = [
+                    'status' => 200,
+                    'response' => "success",
+                    'type' => "success",
+                    'message' => "Data Donor Darah Mandiri Berhasil Diubah"
+                ];
+            } catch (\Exception $e) {
+                $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => 'Data Donor Darah Mandiri Tidak Dapat Diubah'];
             }
         }else{
             $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => $Prsn[1]];
@@ -348,10 +491,7 @@ class DnrmController extends Controller
                     $data[$i]->dnrm_tglAltT = ucwords(strtolower(AIModel::changeDateNFSt($data[$i]->dnrm_tgl)));
                 }
 
-                $data[$i]->dnrm_trmAltT = "Ya";
-                if ($data[$i]->dnrm_trm!='1') {
-                    $data[$i]->dnrm_trmAltT = "Tidak";
-                }
+                
             }
         }else{
             $data->prsn_tgllhrAltT = "";
@@ -394,10 +534,7 @@ class DnrmController extends Controller
                 $data->dnrm_tglAltT = ucwords(strtolower(AIModel::changeDateNFSt($data->dnrm_tgl)));
             }
 
-            $data->dnrm_trmAltT = "Ya";
-            if ($data->dnrm_trm!='1') {
-                $data->dnrm_trmAltT = "Tidak";
-            }
+           
         }
         return $data;
     }

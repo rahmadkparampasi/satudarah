@@ -78,6 +78,12 @@ class OrgController extends Controller
         return $Org;
     }
 
+    static function getDataByUtd($org_utd) {
+        $Org = OrgModel::where('org_utd', $org_utd)->select('org_id', 'org_nm')->orderBy('org_ord', 'asc')->get();
+
+        return $Org;
+    }
+
     public function getDataByTextS(Request $request)
     {
         header('Content-Type: application/json');

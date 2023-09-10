@@ -1,7 +1,7 @@
 <div class="card">
     <div class="card-header d-flex align-items-center justify-content-between">
         <h4 class="mb-1">Data Pendonor</h4>
-        <button type="button" class="btn btn-success rounded m-0 float-end" data-toggle="modal" data-target="#modalAddDnr" onclick="$('#modalAddDnrTitle').html('Tambah Data Pendonor'); cActForm('modalAddDnrF', '{{route('dnrm.insert')}}');">
+        <button type="button" class="btn btn-success rounded m-0 float-end" data-toggle="modal" data-target="#modalAddDnr" onclick="resetForm('modalAddDnrF'); $('#modalAddDnrTitle').html('Tambah Data Pendonor'); cActForm('modalAddDnrF', '{{route('dnrm.insert')}}');">
             <i class="fa fa-plus"></i> Tambah
         </button>
     </div>
@@ -11,6 +11,7 @@
                 <tr>
                     <th>No</th>
                     
+                    <th class="text-wrap">ID</th>
                     <th class="text-wrap">Nama Lengkap</th>
                     <th class="text-wrap">NIK</th>
                     <th class="text-wrap">Golongan</th>
@@ -31,7 +32,8 @@
                 <tr>
                     <td>{{$no}}</td>
                     
-                    <td ><p class="text-wrap">{{$tk->prsn_nm}}</p></td>
+                    <td ><p class="text-wrap">{{$tk->prsn_kd}}</p></td>
+                    <td ><p class="text-wrap">{{ucwords(strtolower(stripslashes($tk->prsn_nm)))}}</p></td>
                     <td class="text-wrap">{{$tk->prsn_nik}}</td>
                     <td class="text-wrap text-danger font-weight-bold f-14">{{$tk->gol_nm}}</td>
                     <td class="text-wrap f-14 font-weight-bold">{{$tk->dnrm_jmlh}}</td>

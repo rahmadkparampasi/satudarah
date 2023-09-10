@@ -12,6 +12,11 @@
     
                     <input type="text" class="form-control" id="seg_nm" name="seg_nm" placeholder="Masukan Nama Segmentasi Daerah" required>
                 </div>
+                <div class="form-group row p-4 mb-0 pb-0 required">
+                    <label class="control-label" for="seg_kd">Kode Segmentasi Daerah</label>
+    
+                    <input type="text" class="form-control" id="seg_kd" name="seg_kd" placeholder="Masukan Kode Segmentasi Daerah" required maxlength="2" minlength="2">
+                </div>
             </div>
             <div class="card-footer">
                 <button type="submit" class="btn btn-primary">SIMPAN</button>

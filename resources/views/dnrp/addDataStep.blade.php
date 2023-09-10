@@ -170,6 +170,8 @@
                                                         $('#prsn_alt').val(data.prsn_alt);
                                                         $('#prsn_kec').val(data.kec_id);
                                                         $('#prsn_gol').val(data.prsn_gol);
+                                                        $('#prsn_krj').val(data.prsn_krj);
+
                                                         getSelect(data.kec_id, data.desa_id, 'prsn_desa');
                                                     },
                                                     error: function(xhr) {
@@ -189,6 +191,7 @@
                                                             .append('<option hidden value="">Pilih Salah Satu Desa/Kelurahan</option>')
                                                             .val('');
                                                         $('#prsn_gol').val('');
+                                                        $('#prsn_krj').val('');
                                                     }
                                                 });
                                             }else{
@@ -202,19 +205,17 @@
                                         <input type="text" class="form-control" id="prsn_nm" name="prsn_nm" placeholder="" required data-parsley-group="group-1">
                                         <small>Isikan nama lengkap tanpa gelar</small>
                                     </div>
-                    
-                                    
-                    
+
                                     <div class="form-group p-4 mb-0 pb-0 required col-md-6 col-sm-12">
                                         <label class="control-label" for="prsn_tmptlhr">Tempat Lahir</label>
                                         <input type="text" class="form-control" id="prsn_tmptlhr" name="prsn_tmptlhr" placeholder="" required data-parsley-group="group-1">
                                     </div>
-                    
+
                                     <div class="form-group p-4 mb-0 pb-0 required col-md-6 col-sm-12">
                                         <label class="control-label" for="prsn_tgllhr">Tanggal Lahir</label>
                                         <input type="date" class="form-control" id="prsn_tgllhr" name="prsn_tgllhr" placeholder="" required data-parsley-group="group-1">
                                     </div>
-                    
+
                                     <div class="form-group p-4 mb-0 pb-0 required col-md-6 col-sm-12">
                                         <label class="control-label" for="prsn_jk">Jenis Kelamin</label>
                                         <select class="form-control" id="prsn_jk" name="prsn_jk" required data-parsley-group="group-1">
@@ -223,13 +224,13 @@
                                             <option value="P">Perempuan</option>
                                         </select>
                                     </div>
-                    
+
                                     <div class="form-group p-4 mb-0 pb-0 required col-md-6 col-sm-12">
                                         <label class="control-label" for="prsn_alt">Alamat</label>
                                         <input class="form-control" id="prsn_alt" name="prsn_alt" placeholder="" required  data-parsley-group="group-1"/>
                                         <small>Isikan Alamat Tanpa Kecamatan Dan Desa</small>
                                     </div>
-                    
+
                                     <div class="form-group p-4 mb-0 pb-0 required col-md-6 col-sm-12">
                                         <label class="control-label" for="prsn_kec">Kecamatan</label>
                                         <select class="form-control" id="prsn_kec" name="prsn_kec" required onchange="ambilDataSelect('prsn_desa', '{{url('desa/getDataJson')}}/', 'Pilih Salah Satu Desa/Kelurahan', toRemove=['prsn_desa'], removeMessage=['Pilih Salah Satu Desa/Kelurahan'], 'prsn_kec')" data-parsley-group="group-1">
@@ -240,14 +241,14 @@
                                             @endforeach
                                         </select>
                                     </div>
-                    
+
                                     <div class="form-group p-4 mb-0 pb-0 required col-md-6 col-sm-12">
                                         <label class="control-label" for="prsn_desa">Desa/Kelurahan</label>
                                         <select class="form-control" id="prsn_desa" name="prsn_desa" required data-parsley-group="group-1">
                                             <option hidden value="">Pilih Salah Satu Desa/Kelurahan</option>
                                         </select>
                                     </div>
-                    
+
                                     <div class="form-group p-4 mb-0 pb-0 required col-md-6 col-sm-12">
                                         <label class="control-label" for="prsn_gol">Golongan Darah</label>
                                         <select class="form-control" id="prsn_gol" name="prsn_gol" required data-parsley-group="group-1">
@@ -257,7 +258,17 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                   
+
+                                    <div class="form-group p-4 mb-0 pb-0 required col-md-6 col-sm-12">
+                                        <label class="control-label" for="prsn_krj">Pekerjaan</label>
+                                        <select class="form-control" id="prsn_krj" name="prsn_krj" required data-parsley-group="group-1">
+                                            <option hidden value="">Pilih Salah Satu Pilihan</option>
+                                            @foreach ($Krj as $tk)
+                                                <option value="{{$tk['krj_id']}}">{{$tk['krj_nm']}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
                                     <div class="col-12 field d-flex justify-content-center">
                                         <button type="button" onclick="closeForm('<?= $IdForm ?>card', '<?= $IdForm ?>', '{{route('dnrp.insert')}}')" class="btn btn-danger mx-2"> <i class="fa fa-ban"></i> Batal</button> 
                                         <button type="button" class="firstNext next btn btn-success"><i class="fa fa-arrow-right"></i> Selanjutnya</button>
@@ -301,6 +312,7 @@
                                                         $('#ktk_prsn_kec').val(data.kec_id);
                                                         $('#ktk_prsn_telp').val(data.prsn_telp);
                                                         $('#ktk_prsn_wa').val(data.prsn_wa);
+                                                        $('#ktk_prsn_krj').val(data.prsn_krj);
                                                         getSelect(data.kec_id, data.desa_id, 'ktk_prsn_desa');
                                                     },
                                                     error: function(xhr) {
@@ -321,6 +333,7 @@
                                                             .val('');
                                                         $('#ktk_prsn_telp').val('');
                                                         $('#ktk_prsn_wa').val('');
+                                                        $('#ktk_prsn_krj').val('');
                                                     }
                                                 });
                                             }else{
@@ -400,6 +413,15 @@
                                             <option hidden value="">Pilih Salah Satu Pilihan</option>
                                             @foreach ($Ktk as $tk)
                                                 <option value="{{$tk['ktk_id']}}">{{$tk['ktk_nm']}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group p-4 mb-0 pb-0 required col-md-6 col-sm-12">
+                                        <label class="control-label" for="ktk_prsn_krj">Pekerjaan</label>
+                                        <select class="form-control" id="ktk_prsn_krj" name="ktk_prsn_krj" required data-parsley-group="group-2">
+                                            <option hidden value="">Pilih Salah Satu Pilihan</option>
+                                            @foreach ($Krj as $tk)
+                                                <option value="{{$tk['krj_id']}}">{{$tk['krj_nm']}}</option>
                                             @endforeach
                                         </select>
                                     </div>

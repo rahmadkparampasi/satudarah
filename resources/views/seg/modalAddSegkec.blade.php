@@ -21,9 +21,7 @@
                         <label class="control-label" for="segkec_kec">Kecamatan</label>
                         <select class="form-control" id="segkec_kec" name="segkec_kec" required>
                             <option hidden value="">Pilih Salah Satu Kecamatan</option>
-                            @foreach ($Kec as $tk)
-                                <option value="{{$tk['id']}}">{{$tk['namaAlt']}}</option>            
-                            @endforeach
+                            
                         </select>
                     </div>
                    
@@ -39,6 +37,10 @@
     </div>
 </div>
 <script>
+    function changeSelect()
+    {
+        ambilDataSelect('segkec_kec', '{{url('kec/getDataJsonExcSeg')}}/', 'Pilih Salah Satu Kecamatan', toRemove=['segkec_kec'], removeMessage=['Pilih Salah Satu Kecamatan'])
+    }
     $(function() {
         $(document).ready(function() {
             var modalAddSegkecF = $('#modalAddSegkecF');

@@ -1,7 +1,7 @@
 <div class="card">
     <div class="card-header d-flex align-items-center justify-content-between">
         <h4 class="mb-1">Data Pendonor</h4>
-        <button type="button" class="btn btn-success rounded m-0 float-end" data-toggle="modal" data-target="#modalAddDnr" onclick="$('#modalAddDnrTitle').html('Tambah Data Pendonor'); cActForm('modalAddDnrF', '{{route('dnrm.insert')}}'); addFill('dnrm_tglDnrm', '{{$Dnrk->dnr_tgl}}')">
+        <button type="button" class="btn btn-success rounded m-0 float-end" onclick="resetForm('{{$IdForm}}Dnr'); cActForm('{{$IdForm}}Dnr', '{{route('dnrm.insertK')}}'); addFill('dnrm_tglDnrm', '{{$Dnrk->dnr_tgl}}'); showForm('{{$IdForm}}Dnrcard', 'flex', 'no')">
             <i class="fa fa-plus"></i> Tambah
         </button>
     </div>
@@ -11,8 +11,8 @@
                 <tr>
                     <th>No</th>
                     
+                    <th class="text-wrap">ID</th>
                     <th class="text-wrap">Nama Lengkap</th>
-                    <th class="text-wrap">NIK</th>
                     <th class="text-wrap">Golongan</th>
                     <th class="text-wrap">Jumlah Donor</th>
                     <th class="text-wrap">Tanggal Donor</th>
@@ -31,8 +31,8 @@
                 <tr>
                     <td>{{$no}}</td>
                     
-                    <td ><p class="text-wrap">{{$tk->prsn_nm}}</p></td>
-                    <td class="text-wrap">{{$tk->prsn_nik}}</td>
+                    <td class="text-wrap">{{$tk->prsn_kd}}</td>
+                    <td ><p class="text-wrap">{{ucwords(strtolower(stripslashes($tk->prsn_nm)))}}</p></td>
                     <td class="text-wrap text-danger font-weight-bold f-14">{{$tk->gol_nm}}</td>
                     <td class="text-wrap f-14 font-weight-bold">{{$tk->dnrm_jmlh}}</td>
                     <td class="text-wrap">{{$tk->dnrm_tglAltT}}</td>
@@ -42,8 +42,7 @@
                     </td>
                     
                     <td>
-                        <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modalAddDnr" onclick="$('#modalAddDnrTitle').html('Ubah Data Pendonor'); cActForm('modalAddDnrF', '{{route('dnrm.updateK')}}');loadDnrm('{{$tk->prsn_id}}'); addFill('dnrm_jmlhDnrm', '{{$tk->dnrm_jmlh}}'); addFill('dnrm_tglDnrm', '{{$tk->dnrm_tgl}}'); addFill('dnrm_id', '{{$tk->dnrm_id}}')"><i class="fas fa-pen"></i></button>
-    
+                        
                         <button type="button" class="btn btn-danger" onclick="callOtherTWF('Menghapus Data Penddonor Darah','{{url('dnrm/delete/'.$tk['dnrm_id'])}}', loadDetail)"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>

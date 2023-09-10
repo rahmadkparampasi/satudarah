@@ -16,19 +16,24 @@
                         if ($Pgn['users_id']!=""||$Pgn['users_id']!=null) {
                     ?>
                         <?php
-                            if ($Pgn['users_tipe']=="ORG") {
+                            if ($Pgn['users_tipe']=="UTD") {
                         ?>
-                            <li class="nav-item pcoded-hasmenu">
-                                <a href="#!" class="nav-link "><span class="pcoded-micon"><i class="fa fa-users"></i></span><span class="pcoded-mtext">Kelompok & Anggota</span></a>
-                                <ul class="pcoded-submenu">
-                                    <li><a href="">Personal</a></li>
-                                    
-                                </ul>
-                            </li>
                             <li class="nav-item">
-                                <a href="" class="nav-link "><span class="pcoded-micon"><i class="fa fa-paper-plane"></i></span><span class="pcoded-mtext">Inovasi Umum</span></a>
+                                <a href="{{url('prsn')}}" class="nav-link "><span class="pcoded-micon"><i class="fa fa-user"></i></span><span class="pcoded-mtext">Personal</span></a>
                             </li>
-                            
+                            <li class="nav-item pcoded-hasmenu">
+                                <a href="/#!" class="nav-link " onclick="return false;"><span class="pcoded-micon"><i class="fa fa-tint"></i></span><span class="pcoded-mtext">Donor Darah</span></a>
+                                <ul class="pcoded-submenu">
+                                    <li><a href="{{route('dnrp.index')}}">Permintaan Darah</a></li>
+                                    <li><a href="{{route('dnrk.index')}}">Kegiatan</a></li>    
+                                </ul>
+                            </li>   
+                            <li class="nav-item pcoded-hasmenu">
+                                <a href="/#!" class="nav-link "><span class="pcoded-micon"><i class="fa fa-users"></i></span><span class="pcoded-mtext">Pengguna</span></a>
+                                <ul class="pcoded-submenu">
+                                    <li><a href="{{route('users.index')}}">Pengguna</a></li>                                
+                                </ul>
+                            </li>   
                         
                         <?php
                             }elseif($Pgn['users_tipe']=="ADM"){
@@ -38,18 +43,10 @@
                                 <a href="{{url('prsn')}}" class="nav-link "><span class="pcoded-micon"><i class="fa fa-user"></i></span><span class="pcoded-mtext">Personal</span></a>
                             </li>
                             <li class="nav-item pcoded-hasmenu">
-                                <a href="/#!" class="nav-link " onclick="return false;"><span class="pcoded-micon"><i class="fa fa-users"></i></span><span class="pcoded-mtext">Donor Darah</span></a>
-                                <ul class="pcoded-submenu">
-                                    <li><a href="{{route('dnrp.index')}}">Personal</a></li>
-                                    <li><a href="{{route('dnrk.index')}}">Kegiatan</a></li>                                
-                                    {{-- <li><a href="{{route('dnr.index', ['K'])}}">Mandiri</a></li>                                 --}}
-                                </ul>
-                            </li>   
-                            <li class="nav-item pcoded-hasmenu">
                                 <a href="/#!" class="nav-link "><span class="pcoded-micon"><i class="fa fa-users"></i></span><span class="pcoded-mtext">Pengguna Dan Organisasi</span></a>
                                 <ul class="pcoded-submenu">
                                     <li><a href="{{url('org')}}">Organisasi</a></li>
-                                    <li><a href="/users">Pengguna</a></li>                                
+                                    <li><a href="{{route('users.index')}}">Pengguna</a></li>                                
                                 </ul>
                             </li>   
                             <li class="nav-item">

@@ -28,6 +28,9 @@ class GolController extends Controller
     public function index()
     {
         $this->data['Pgn'] = $this->getUser();
+        if ($this->data['Pgn']->users_tipe!="ADM") {
+            return redirect()->intended();
+        }
         
         $this->data['ButtonMethod'] = 'SIMPAN';
         $this->data['MethodForm'] = 'insertData';
@@ -57,6 +60,21 @@ class GolController extends Controller
         $this->data['Gol'] = $this->setData($this->data['Gol']);
 
         return view('gol.data', $this->data);
+    }
+
+    public function getDataJson()
+    {
+        $this->data['Gol'] = GolModel::where('gol_act', '1')->select(['gol_id', 'gol_nm', 'gol_act'])->orderBy('gol_ord', 'desc')->get();
+
+        $this->data['GolN'] = [];
+        for ($i=0; $i < count($this->data['Gol']); $i++) { 
+            $this->data['GolN'][$i]['optValue'] = '';
+            $this->data['GolN'][$i]['optValue'] = $this->data['Gol'][$i]['gol_id'];
+
+            $this->data['GolN'][$i]['optText'] = '';
+            $this->data['GolN'][$i]['optText'] = $this->data['Gol'][$i]['gol_nm'];
+        }
+        return $this->data['GolN'];
     }
 
     static function getDataActStat()

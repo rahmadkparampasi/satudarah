@@ -87,11 +87,50 @@
         .pcoded-navbar.theme-horizontal .pcoded-inner-navbar > li.active:after, .pcoded-navbar.theme-horizontal .pcoded-inner-navbar > li.pcoded-trigger:after {
             background: #FF4680;
         }
+        .dropdown-menu > li.active, .dropdown-menu > li:active, .dropdown-menu > li:focus, .dropdown-menu > li:hover,
+            .dropdown-menu > .dropdown-item.active,
+            .dropdown-menu > .dropdown-item:active,
+            .dropdown-menu > .dropdown-item:focus,
+            .dropdown-menu > .dropdown-item:hover {
+            background: #FF4680;
+        }
+
+        .pcoded-header .dropdown .profile-notification .pro-body li.active, .pcoded-header .dropdown .profile-notification .pro-body li:active, .pcoded-header .dropdown .profile-notification .pro-body li:focus, .pcoded-header .dropdown .profile-notification .pro-body li:hover {
+            background: #FF4680;
+        }
+
+        .top {
+            --offset: 0px; 
+            width: 60px;
+            height: 60px;
+            position: sticky;
+            bottom: 20px;      
+            left: 100%;
+            margin-right:20px; 
+            place-self: end;
+            margin-top: calc(10vh + var(--offset));
+            
+            /* visual styling */
+            border: none;
+            text-decoration: none;
+            padding: 10px;
+            font-family: sans-serif;
+            color: #fff;
+            background: #FF4680;
+            border-radius: 50%;
+            white-space: nowrap;
+            font-size: 25px;
+        }
+       
+        .top:hover{
+            background: #4680ff;
+            color: #fff;
+        }
     </style>
 </head>
 
 <body>
-    <div id="selfLoading" class="hide">
+    <div id="selfLoading" class="">
         <div class="imagePos">
             <div class="row">
                 <div class="col-lg-12" style="text-align: center;">
@@ -145,11 +184,27 @@
                     
                     <li>
                         <div class="dropdown drp-user">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <i class="fa fa-user"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right profile-notification">
+                                <ul class="pro-body">
+                                    <li><a href="#!" class="dropdown-item" title="Logout" onclick="callHrefWC('Ingin Keluar Aplikasi', '/masuk/authKeluar'); return false;">
+                                        <i class="feather icon-power"></i> Keluar Aplikasi
+                                    </a></li>
+                                    <li><a href="#!" class="dropdown-item" title="Ubah Password" data-toggle="modal" data-target="#modalChangePwd" onclick="resetForm('modalChangePwdF'); addFill('users_nmPwd', '{{$Pgn->users_nm}}'); addFill('users_idPwd', '{{$Pgn->users_id}}'); addFill('tipePwd', 'ND');  return false;"><i class="feather icon-lock"></i> Ubah Password</a></li>
+                                    
+                                </ul>
+                               
+                                
+                            </div>
+                        </div>
+                        {{-- <div class="dropdown drp-user">
                             <a href="#" class="dropdown-toggle" title="Logout" onclick="callHrefWC('Ingin Keluar Aplikasi', '/masuk/authKeluar'); return false;">
                                 <i class="fa fa-power-off"></i>
                             </a>
                             
-                        </div>
+                        </div> --}}
                     </li>
                 </ul>
             </div>
@@ -185,15 +240,22 @@
 
                                 <!-- [ horizontal-layout ] end -->
                             </div>
+                            
                             <!-- [ Main Content ] end -->
                         </div>
                     </div>
                 </div>
             </div>
+            @include('users.modalChangePwd')
         </div>
+        @if ($Pgn->users_tipe=="UTD")
+            @include('layouts.modalViewPrsnRight')
+            @include('layouts.modalAddPrsnRight')
+            
+            <button type="button" data-toggle="modal" onclick="$('#viewPrsnRight').html(''); resetForm('<?= $IdForm ?>searchFormSide');" data-target="#modalViewPrsnRight" class="top side-panel-toggle"><i class="fa fa-users"></i></button>
+        @endif
     </div>
-
-    
+   
     <!-- Required Js -->
     <script src="/vendors/include/js/vendor-all.min.js"></script>
     <script src="/vendors/include/js/plugins/bootstrap.min.js"></script>
@@ -214,7 +276,14 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.11.5/af-2.3.7/b-2.2.2/b-colvis-2.2.2/b-html5-2.2.2/b-print-2.2.2/cr-1.5.5/fc-4.0.2/fh-3.2.2/kt-2.6.4/r-2.2.9/rg-1.1.4/rr-1.2.8/sc-2.0.5/sb-1.3.2/sp-2.0.0/sl-1.3.4/datatables.min.js"></script>
     <script src="//cdn.rawgit.com/ashl1/datatables-rowsgroup/v1.0.0/dataTables.rowsGroup.js"></script>
-
+    @if (isset($mobile))
+        @if ($mobile)
+            <script>
+                $.fn.DataTable.ext.pager.numbers_length = 3;
+            </script>
+            
+        @endif
+    @endif
     <!-- quill-1.3.6 -->
     <!-- <script src="/vendors/script/quill-1.3.6/dist/quill.core.js"></script> -->
     <!-- <script src="/vendors/script/quill-1.3.6/dist/quill.min.js"></script> -->

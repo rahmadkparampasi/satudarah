@@ -39,6 +39,7 @@ class DftrController extends Controller
         $this->data['UrlForm'] = 'dftr';
 
         $this->data['Gol'] = GolController::getDataActStatPublik();
+        $this->data['Krj'] = KrjController::getDataActStat();
         $this->data['Kec'] = KecController::getData();
 
         $this->data['MethodForm1'] = substr($this->data['MethodForm'], 0, 10);
@@ -70,6 +71,8 @@ class DftrController extends Controller
                     ]);
                     $this->data['ButtonMethod'] = 'SIMPAN';
                     $this->data['MethodForm'] = 'insertData';
+                    $this->data['pass'] = $data->pass;
+                    $this->data['kd'] = $data->kd;
 
                     return view('dftr.success', $this->data);
                 }else{

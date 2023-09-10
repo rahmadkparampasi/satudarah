@@ -20,19 +20,20 @@ class DnrkController extends Controller
             'cmAct' => '',
             'scAct' => '',
 
-            'WebTitle' => 'DONOR DARAH KEGIATAN',
-            'PageTitle' => 'Donor Darah Kegiatan',
+            'WebTitle' => 'KEGIATAN DONOR DARAH',
+            'PageTitle' => 'Kegiatan Donor Darah',
             'BasePage' => 'dnrk',
         ];
     }
 
     public function index()
     {
-        // dd($kat);
+        $this->data['mobile'] = $this->isMobile();
+
         $this->data['Pgn'] = $this->getUser();
-        // if ($kat!="P"||$kat!="K"||$kat != '') {
-        //     return redirect()->intended();
-        // }
+        if ($this->data['Pgn']->users_tipe!="UTD") {
+            return redirect()->intended();
+        }
 
         $this->data['ButtonMethod'] = 'SIMPAN';
         $this->data['MethodForm'] = 'insertData';
@@ -41,7 +42,7 @@ class DnrkController extends Controller
 
         $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
         
-        $this->data['Dnrk'] = DnrModel::leftJoin('desa', 'dnr.dnr_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnr_kat', 'K')->select(['dnr_id', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'desa.id as desa_id', 'kec.id as kec_id', 'dnr_bth', 'dnr_tgl', 'dnr_keg', 'dnr_nm', 'dnr_telp', 'dnr_tmpt', 'dnr_send'])->orderBy('dnr_ord', 'desc')->limit(20)->get();
+        $this->data['Dnrk'] = DnrModel::join('dnrlok', 'dnr.dnr_id', '=', 'dnrlok.dnrlok_dnr')->leftJoin('desa', 'dnr.dnr_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnrlok_org', $this->data['Pgn']->users_org)->where('dnr_kat', 'K')->select(['dnr_id', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'desa.id as desa_id', 'kec.id as kec_id', 'dnr_bth', 'dnr_tgl', 'dnr_keg', 'dnr_nm', 'dnr_telp', 'dnr_tmpt', 'dnr_send', 'dnrlok_utm'])->orderBy('dnr_ord', 'desc')->limit(20)->get();
         $this->data['Dnrk'] = DnrController::setData($this->data['Dnrk']);
 
         $this->data['Kec'] = KecController::getData();
@@ -60,7 +61,7 @@ class DnrkController extends Controller
 
         $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
 
-        $this->data['Dnrk'] = DnrModel::leftJoin('desa', 'dnr.dnr_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnr_kat', 'K')->select(['dnr_id', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'desa.id as desa_id', 'kec.id as kec_id', 'dnr_bth', 'dnr_tgl', 'dnr_keg', 'dnr_nm', 'dnr_telp', 'dnr_tmpt', 'dnr_send'])->orderBy('dnr_ord', 'desc')->limit(20)->get();
+        $this->data['Dnrk'] = DnrModel::join('dnrlok', 'dnr.dnr_id', '=', 'dnrlok.dnrlok_dnr')->leftJoin('desa', 'dnr.dnr_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnrlok_org', $this->data['Pgn']->users_org)->where('dnr_kat', 'K')->select(['dnr_id', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'desa.id as desa_id', 'kec.id as kec_id', 'dnr_bth', 'dnr_tgl', 'dnr_keg', 'dnr_nm', 'dnr_telp', 'dnr_tmpt', 'dnr_send', 'dnrlok_utm'])->orderBy('dnr_ord', 'desc')->limit(20)->get();
         $this->data['Dnrk'] = DnrController::setData($this->data['Dnrk']);
 
         return view('dnrk.data', $this->data);
@@ -71,29 +72,40 @@ class DnrkController extends Controller
         $this->data['mobile'] = $this->isMobile();
 
         $this->data['Pgn'] = $this->getUser();
+        if ($this->data['Pgn']->users_tipe!="UTD") {
+            return redirect()->intended();
+        }
 
         $this->data['ButtonMethod'] = 'SIMPAN';
         $this->data['MethodForm'] = 'insertData';
-        $this->data['IdForm'] = 'dnrpAddData';
-        $this->data['UrlForm'] = 'dnrp';
+        $this->data['IdForm'] = 'dnrkAddData';
+        $this->data['UrlForm'] = 'dnrk';
         $this->data['dnr_id'] = $dnr_id;
+        $this->data['Utama'] = DnrlokController::getUtmByOrgDnr($dnr_id, $this->data['Pgn']->users_org);
 
         $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
 
-        $this->data['Dnrk'] = DnrModel::leftJoin('desa', 'dnr.dnr_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnr_kat', 'K')->select(['dnr_id', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'desa.id as desa_id', 'kec.id as kec_id', 'dnr_bth', 'dnr_tgl', 'dnr_keg', 'dnr_nm', 'dnr_telp', 'dnr_tmpt', 'dnr_send'])->orderBy('dnr_ord', 'desc')->get()->first();
+        $this->data['Dnrk'] = DnrModel::leftJoin('desa', 'dnr.dnr_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnr_id', $dnr_id)->select(['dnr_id', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'desa.id as desa_id', 'kec.id as kec_id', 'dnr_bth', 'dnr_tgl', 'dnr_keg', 'dnr_nm', 'dnr_telp', 'dnr_tmpt', 'dnr_send'])->orderBy('dnr_ord', 'desc')->get()->first();
         if ($this->data['Dnrk']==null) {
-            $this->data['Message'] = 'Data Donor Darah Pribadi Tidak Ditemukan';
+            $this->data['Message'] = 'Data Kegiatan Donor Darah Tidak Ditemukan';
             return view('layouts.notFound', $this->data);
         }
-        
+
+        if (!DnrlokController::getByOrgDnr($dnr_id, $this->data['Pgn']->users_org)) {
+            return redirect()->intended('/dnrk');
+        }
+
+        $this->data['Org'] = OrgController::getDataByUtd('1');
         $this->data['Gol'] = GolController::getDataActStat();
         $this->data['Kec'] = KecController::getData();
         $this->data['Krj'] = KrjController::getDataActStat();
 
-        $this->data['Dnrm'] = DnrmModel::leftJoin('org', 'dnrm.dnrm_org', '=', 'org.org_id')->leftJoin('prsn', 'dnrm.dnrm_prsn', '=', 'prsn.prsn_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnrm_dnr', $dnr_id)->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'dnrm_id', 'dnrm_dnr', 'dnrm_jmlh', 'dnrm_tgl', 'dnrm_trm', 'org_nm', 'dnrm_prsn', 'dnrm_org'])->orderBy('dnrm_ord', 'desc')->get();
+        $this->data['Dnrm'] = DnrmModel::leftJoin('prsn', 'dnrm.dnrm_prsn', '=', 'prsn.prsn_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnrm_dnr', $dnr_id)->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'dnrm_id', 'dnrm_dnr', 'dnrm_jmlh', 'dnrm_tgl', 'dnrm_prsn', 'prsn_kd'])->orderBy('dnrm_ord', 'desc')->get();
         $this->data['Dnrm'] = DnrmController::setData($this->data['Dnrm']);
 
         $this->data['Dnrk'] = DnrController::setData($this->data['Dnrk'], 'K');
+        $this->data['Dnrlok'] = DnrlokController::getByDnr($dnr_id);
+
         return view('dnrk.detail', $this->data);
     }
 
@@ -105,14 +117,16 @@ class DnrkController extends Controller
 
         $this->data['ButtonMethod'] = 'SIMPAN';
         $this->data['MethodForm'] = 'insertData';
-        $this->data['IdForm'] = 'dnrpAddData';
-        $this->data['UrlForm'] = 'dnrp';
+        $this->data['IdForm'] = 'dnrkAddData';
+        $this->data['UrlForm'] = 'dnrk';
         $this->data['dnr_id'] = $dnr_id;
+        $this->data['Utama'] = DnrlokController::getUtmByOrgDnr($dnr_id, $this->data['Pgn']->users_org);
 
         $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
 
-        $this->data['Dnrk'] = DnrModel::leftJoin('desa', 'dnr.dnr_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnr_kat', 'K')->select(['dnr_id', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'desa.id as desa_id', 'kec.id as kec_id', 'dnr_bth', 'dnr_tgl', 'dnr_keg', 'dnr_nm', 'dnr_telp', 'dnr_tmpt', 'dnr_send'])->orderBy('dnr_ord', 'desc')->get()->first();
+        $this->data['Dnrk'] = DnrModel::leftJoin('desa', 'dnr.dnr_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->where('dnr_id', $dnr_id)->select(['dnr_id', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'desa.id as desa_id', 'kec.id as kec_id', 'dnr_bth', 'dnr_tgl', 'dnr_keg', 'dnr_nm', 'dnr_telp', 'dnr_tmpt', 'dnr_send'])->orderBy('dnr_ord', 'desc')->get()->first();
         $this->data['Dnrk'] = DnrController::setData($this->data['Dnrk'], 'K');
+        $this->data['Dnrlok'] = DnrlokController::getByDnr($dnr_id);
 
         return view('dnrk.detailDetail', $this->data);
     }
@@ -151,7 +165,9 @@ class DnrkController extends Controller
 
         $save = $DnrModel->save();
         if ($save) {
-            // $prsn_id = '';
+            $Dnr = DnrModel::where('dnr_ord', $DnrModel->dnr_id)->select(['dnr_id'])->get()->first();
+            $Dnrlok = DnrlokController::insertDataUtm($Dnr->dnr_id, $this->data['Pgn']);
+
             
             $data['response'] = [
                 'status' => 200,

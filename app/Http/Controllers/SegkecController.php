@@ -40,22 +40,26 @@ class SegkecController extends Controller
         $SegkecModel = new SegkecModel();
 
         $this->data['Pgn'] = $this->getUser();
-
-        $SegkecModel->segkec_seg = $request->segkec_seg;
-        $SegkecModel->segkec_kec = $request->segkec_kec;
-        $SegkecModel->segkec_ucreate = $this->data['Pgn']->users_id;
-        $SegkecModel->segkec_uupdate = $this->data['Pgn']->users_id;
-
-        $save = $SegkecModel->save();
-        if ($save) {
-            $data['response'] = [
-                'status' => 200,
-                'response' => "success",
-                'type' => "success",
-                'message' => "Data Kecamatan Segmentasi Daerah Berhasil Disimpan"
-            ];
+        $this->data['Segkec'] = SegkecModel::where('segkec_kec', $request->segkec_kec)->select('segkec_id')->orderBy('segkec_ord', 'asc')->get();
+        if (count($this->data['Segkec'])>0) {
+            $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => 'Data Kecamatan Pada Segmen Daerah Telah Ada'];
         }else{
-            $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => 'Data Kecamatan Segmentasi Daerah Tidak Dapat Disimpan'];
+            $SegkecModel->segkec_seg = $request->segkec_seg;
+            $SegkecModel->segkec_kec = $request->segkec_kec;
+            $SegkecModel->segkec_ucreate = $this->data['Pgn']->users_id;
+            $SegkecModel->segkec_uupdate = $this->data['Pgn']->users_id;
+    
+            $save = $SegkecModel->save();
+            if ($save) {
+                $data['response'] = [
+                    'status' => 200,
+                    'response' => "success",
+                    'type' => "success",
+                    'message' => "Data Kecamatan Segmentasi Daerah Berhasil Disimpan"
+                ];
+            }else{
+                $data['response'] = ['status' => 500, 'response' => 'error','type' => "danger", 'message' => 'Data Kecamatan Segmentasi Daerah Tidak Dapat Disimpan'];
+            }
         }
         return response()->json($data, $data['response']['status']);
     }

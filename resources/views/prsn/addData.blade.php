@@ -14,12 +14,6 @@
                 </div>
 
                 <div class="form-group p-4 mb-0 pb-0 required">
-                    <label class="control-label" for="prsn_nik">NIK (Nomor Induk Kependudukan)</label>
-    
-                    <input type="text" class="form-control" id="prsn_nik" name="prsn_nik" placeholder="" required>
-                </div>
-
-                <div class="form-group p-4 mb-0 pb-0 required">
                     <label class="control-label" for="prsn_tmptlhr">Tempat Lahir</label>
     
                     <input type="text" class="form-control" id="prsn_tmptlhr" name="prsn_tmptlhr" placeholder="" required>
@@ -72,10 +66,19 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="form-group p-4 mb-0 pb-0 required">
+                    <label class="control-label" for="prsn_krj">Pekerjaan</label>
+                    <select class="form-control" id="prsn_krj" name="prsn_krj" required>
+                        <option hidden value="">Pilih Salah Satu Pilihan</option>
+                        @foreach ($Krj as $tk)
+                            <option value="{{$tk['krj_id']}}">{{$tk['krj_nm']}}</option>
+                        @endforeach
+                    </select>
+                </div>
                
                 <div class="form-group p-4 mb-0 pb-0 required">
                     <label class="control-label" for="prsn_telp">Nomor Telepon</label>
-                    <input type="text" class="form-control" id="prsn_telp" name="prsn_telp" placeholder="" required>
+                    <input type="text" class="form-control" id="prsn_telp" name="prsn_telp" placeholder="">
                 </div>
                 
                 <div class="form-group p-4 mb-0 pb-0 required">

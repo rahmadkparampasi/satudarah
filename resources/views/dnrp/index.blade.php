@@ -3,12 +3,12 @@
 @section('title', $WebTitle)
 
 @section('content')
-@include('dnrp.addDataStep')
+@include('dnrp.addData')
 <div class="col-sm-12" >
     <div class="card">
         <div class="card-header">
             <h6>Data {{$PageTitle}}</h6>
-                <button class='btn btn-primary' style="float: right;" onclick="showForm('{{$IdForm}}card', 'flex'); cActForm('{{$IdForm}}', '{{route('dnrp.insert')}}'); resetForm('{{$IdForm}}'); $('#prsn_nik').removeAttr('readonly'); $('#ktk_prsn_nik').removeAttr('readonly');"><i class="fa fa-plus"></i> TAMBAH</button>
+                <button class='btn btn-primary' style="float: right;" onclick="showForm('{{$IdForm}}card', 'flex'); cActForm('{{$IdForm}}', '{{route('dnrp.insert')}}'); resetForm('{{$IdForm}}');"><i class="fa fa-plus"></i> TAMBAH</button>
             <div class="card-header-right">
 
             </div>
@@ -46,6 +46,7 @@
                 $('#prsn_alt').val(data.prsn_alt);
                 $('#prsn_kec').val(data.kec_id);
                 $('#prsn_gol').val(data.prsn_gol);
+                $('#prsn_krj').val(data.prsn_krj);
                 getSelect(data.kec_id, data.desa_id, 'prsn_desa');
             },
             error: function(xhr) {
@@ -68,6 +69,7 @@
                     .append('<option hidden value="">Pilih Salah Satu Desa/Kelurahan</option>')
                     .val('');
                 $('#prsn_gol').val('');
+                $('#prsn_krj').val('');
             }
         });
     }
@@ -97,6 +99,7 @@
                 $('#ktk_prsn_kec').val(data.kec_id);
                 $('#ktk_prsn_telp').val(data.prsn_telp);
                 $('#ktk_prsn_wa').val(data.prsn_wa);
+                $('#ktk_prsn_krj').val(data.prsn_krj);
                 getSelect(data.kec_id, data.desa_id, 'ktk_prsn_desa');
             },
             error: function(xhr) {
@@ -119,6 +122,7 @@
                     .val('');
                 $('#ktk_prsn_telp').val('');
                 $('#ktk_prsn_wa').val('');
+                $('#ktk_prsn_krj').val('');
             }
         });
     }

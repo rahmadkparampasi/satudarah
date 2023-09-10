@@ -91,7 +91,12 @@
                                 <h2 class="mb-20 f-w-bold text-center">DAFTAR</h2><br/>
                                 <div class="alert alert-success alert-dismissible pr-3 pl-3" role="alert">
                                     <strong class="text-center">Registrasi Berhasil Dilakukan<br/><br/></strong>
-                                    <p class="text-justify">Terima kasih banyak atas partisipasinya dalam mengirimkan data untuk membantu penyampaian informasi donor darah. Kontribusi Anda sangat berarti dan membantu kami menjalankan kampanye donor darah dengan lebih efektif. Dengan dukungan Anda, kami dapat mencapai lebih banyak orang dan menyelamatkan lebih banyak nyawa. Terima kasih sekali lagi atas kerjasama dan kebaikan hati Anda! </p>
+                                    <p class="text-justify">Terima kasih banyak atas partisipasinya dalam mengirimkan data untuk membantu penyampaian informasi donor darah. Kontribusi Anda sangat berarti dan membantu kami menjalankan kampanye donor darah dengan lebih efektif. Dengan dukungan Anda, kami dapat mencapai lebih banyak orang dan menyelamatkan lebih banyak nyawa. <br/><br/>
+
+                                    Untuk dapat melihat riwayat donor darah anda, kami telah mengirimkan pesan konfirmasi kepada anda melalui WhatsApp. <br/><br/>
+                                        
+                                        
+                                    Terima kasih sekali lagi atas kerjasama dan kebaikan hati Anda! </p>
                                 </div>
                                 <a href="{{url('')}}" class="btn btn-block btn-info mb-4"><i class="fa fa-home text-white"></i>  BERANDA</a>
                                 <div class="copyright text-center text-sm text-muted text-lg-start mb-50">

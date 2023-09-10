@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AIModel;
 use Illuminate\Http\Request;
 use App\Models\KecModel;
+use Illuminate\Support\Facades\DB;
 
 class KecController extends Controller
 {
@@ -38,6 +39,30 @@ class KecController extends Controller
             $this->data['KecN'][$i]['optText'] = '';
             $this->data['KecN'][$i]['optText'] = $this->data['Kec'][$i]['namaAlt'];
         }
+        return $this->data['KecN'];
+    }
+
+    public function getDataJsonExcSeg()
+    {
+        $this->data['Kec'] = DB::table("kec")->select('*')->whereNotIn('id',function($query) {
+            $query->select('segkec_kec')->from('segkec');
+        })->get();
+
+        // $this->data['Kec'] = $this->setData($this->data['Kec']);
+        for ($i=0; $i < count($this->data['Kec']); $i++) { 
+            $this->data['Kec'][$i]->namaAlt = ucwords(strtolower($this->data['Kec'][$i]->nama));
+            $this->data['Kec'][$i]->namaAltJns = "Kecamatan ".ucwords(strtolower($this->data['Kec'][$i]->nama));
+        }
+
+        $this->data['KecN'] = [];
+        for ($i=0; $i < count($this->data['Kec']); $i++) { 
+            $this->data['KecN'][$i]['optValue'] = '';
+            $this->data['KecN'][$i]['optValue'] = $this->data['Kec'][$i]->id;
+
+            $this->data['KecN'][$i]['optText'] = '';
+            $this->data['KecN'][$i]['optText'] = $this->data['Kec'][$i]->namaAlt;
+        }
+
         return $this->data['KecN'];
     }
 

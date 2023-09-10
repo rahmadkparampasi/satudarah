@@ -72,6 +72,7 @@
                 $('#prsn_alt').val(data.prsn_alt);
                 $('#prsn_kec').val(data.kec_id);
                 $('#prsn_gol').val(data.prsn_gol);
+                $('#prsn_krj').val(data.prsn_krj);
                 getSelect(data.kec_id, data.desa_id, 'prsn_desa');
             },
             error: function(xhr) {
@@ -94,6 +95,7 @@
                     .append('<option hidden value="">Pilih Salah Satu Desa/Kelurahan</option>')
                     .val('');
                 $('#prsn_gol').val('');
+                $('#prsn_krj').val('');
             }
         });
     }
@@ -123,6 +125,7 @@
                 $('#ktk_prsn_kec').val(data.kec_id);
                 $('#ktk_prsn_telp').val(data.prsn_telp);
                 $('#ktk_prsn_wa').val(data.prsn_wa);
+                $('#ktk_prsn_krj').val(data.prsn_krj);
                 getSelect(data.kec_id, data.desa_id, 'ktk_prsn_desa');
             },
             error: function(xhr) {
@@ -145,6 +148,7 @@
                     .val('');
                 $('#ktk_prsn_telp').val('');
                 $('#ktk_prsn_wa').val('');
+                $('#ktk_prsn_krj').val('');
             }
         });
     }
@@ -176,6 +180,8 @@
                 $('#prsn_golDnrm').val(data.prsn_gol);
                 $('#prsn_telpDnrm').val(data.prsn_telp);
                 $('#prsn_waDnrm').val(data.prsn_wa);
+                $('#prsn_krjDnrm').val(data.prsn_krj);
+
                 getSelect(data.kec_id, data.desa_id, 'prsn_desaDnrm');
             },
             error: function(xhr) {
@@ -199,6 +205,7 @@
                 $('#prsn_golDnrm').val('');
                 $('#prsn_telpDnrm').val('');
                 $('#prsn_waDnrm').val('');
+                $('#prsn_krjDnrm').val('');
             }
         });
     }
@@ -206,6 +213,7 @@
         ambilDataSelect(idSelectDesa, '/desa/getDataJson/'+kec_id_ex, 'Pilih Salah Satu Desa/Kelurahan', toRemove=[idSelectDesa], removeMessage=['Pilih Salah Satu Desa/Kelurahan'], '', desa_id_ex);
     }
 </script>
+@include('dnrlok.modalAddDnrlok')
 @include('dnrp.modalAddDnr')
 @include('dnrp.modalAddTmbh')
 

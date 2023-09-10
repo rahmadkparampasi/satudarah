@@ -28,6 +28,9 @@ class KrjController extends Controller
     public function index()
     {
         $this->data['Pgn'] = $this->getUser();
+        if ($this->data['Pgn']->users_tipe!="ADM") {
+            return redirect()->intended();
+        }
         
         $this->data['ButtonMethod'] = 'SIMPAN';
         $this->data['MethodForm'] = 'insertData';
@@ -57,6 +60,20 @@ class KrjController extends Controller
         $this->data['Krj'] = $this->setData($this->data['Krj']);
 
         return view('krj.data', $this->data);
+    }
+
+    public function getDataJson()
+    {
+        $this->data['Krj'] = KrjModel::where('krj_act', '1')->where('krj_prof', '0')->select(['krj_id', 'krj_nm'])->orderBy('krj_ord', 'asc')->get();
+        $this->data['KrjN'] = [];
+        for ($i=0; $i < count($this->data['Krj']); $i++) { 
+            $this->data['KrjN'][$i]['optValue'] = '';
+            $this->data['KrjN'][$i]['optValue'] = $this->data['Krj'][$i]['krj_id'];
+
+            $this->data['KrjN'][$i]['optText'] = '';
+            $this->data['KrjN'][$i]['optText'] = $this->data['Krj'][$i]['krj_nm'];
+        }
+        return $this->data['KrjN'];
     }
 
     static function getDataActStat()

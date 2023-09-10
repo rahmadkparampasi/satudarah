@@ -26,6 +26,9 @@ class RefController extends Controller
     public function index()
     {
         $this->data['Pgn'] = $this->getUser();
+        if ($this->data['Pgn']->users_tipe!="ADM") {
+            return redirect()->intended();
+        }
         
         $this->data['ButtonMethod'] = 'SIMPAN';
         $this->data['MethodForm'] = 'insertData';

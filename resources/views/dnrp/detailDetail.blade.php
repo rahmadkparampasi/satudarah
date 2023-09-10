@@ -3,8 +3,10 @@
         <div class="col-md-4 order-md-1">
             <div class="card">
                 <div class="card-body">
-                    @if ($Dnrp->dnr_send=="0")
-                        <button type="button" class="btn btn-warning w-100 my-1" onclick="showForm('{{$IdForm}}card', 'block'); cActForm('{{$IdForm}}', '{{route('dnrp.update')}}'); $('.slide-page').css('margin-left', '0'); $('.display1').show();loadStepPrsn('{{$Dnrp['dnrprsn_prsn']}}'); loadStepKtk('{{$Dnrp['dnrktk_prsn']}}'); addFill('dnr_ktk', '{{$Dnrp['dnr_ktk']}}'); addFill('dnr_bth', '{{$Dnrp['dnr_bth']}}'); addFill('dnr_org', '{{$Dnrp['dnr_org']}}'); addFill('dnr_sft', '{{$Dnrp['dnr_sft']}}'); addFill('dnr_tgl', '{{$Dnrp['dnr_tgl']}}'); addFill('dnr_id', '{{$Dnrp['dnr_id']}}'); $('#{{$IdForm}}').attr('data-url-load', '{{url('dnrp/loadView/'.$dnr_id)}}');"><i class="fa fa-pen"></i> UBAH</button>
+                    @if ($Utama)
+                        @if ($Dnrp->dnr_send=="0")
+                            <button type="button" class="btn btn-warning w-100 my-1" onclick="showForm('{{$IdForm}}card', 'block'); cActForm('{{$IdForm}}', '{{route('dnrp.update')}}'); $('.slide-page').css('margin-left', '0'); $('.display1').show();loadStepPrsn('{{$Dnrp['dnrprsn_prsn']}}'); loadStepKtk('{{$Dnrp['dnrktk_prsn']}}'); addFill('dnr_ktk', '{{$Dnrp['dnr_ktk']}}'); addFill('dnr_bth', '{{$Dnrp['dnr_bth']}}'); addFill('dnr_org', '{{$Dnrp['dnr_org']}}'); addFill('dnr_sft', '{{$Dnrp['dnr_sft']}}'); addFill('dnr_tgl', '{{$Dnrp['dnr_tgl']}}'); addFill('dnr_id', '{{$Dnrp['dnr_id']}}'); $('#{{$IdForm}}').attr('data-url-load', '{{url('dnrp/loadView/'.$dnr_id)}}');"><i class="fa fa-pen"></i> UBAH</button>
+                        @endif
                     @endif
                     <a href="{{route('dnrp.index')}}" class="btn btn-danger w-100 my-1"><i class="fa fa-reply"></i> KEMBALI</a> 
                 </div>
@@ -49,15 +51,25 @@
                                 </li>
                             @endif
                             <li class="nav-item">
-                                <a class="nav-link text-reset" id="kontak-tab" data-toggle="tab" href="#kontak" role="tab" aria-controls="kontak" aria-selected="false" onclick="table()"><i class="fa fa-phone me-2"></i> Kontak</a>
+                                <a class="nav-link text-reset" id="kontak-tab" data-toggle="tab" href="#kontak" role="tab" aria-controls="kontak" aria-selected="false" onclick=""><i class="fa fa-phone me-2"></i> Kontak</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-reset" id="lokasi-tab" data-toggle="tab" href="#lokasi" role="tab" aria-controls="lokasi" aria-selected="false" onclick=""><i class="fa fa-tint me-2"></i> Lokasi Donor</a>
                             </li>
                         </ul>
                         <div class="tab-content" id="myTabContent">
                             <div class="tab-pane fade show active" id="pasien" role="tabpanel" aria-labelledby="pasien-tab">
                                 <div class="form-group row align-items-center">
+                                    <label class="col-sm-3 col-form-label font-weight-bolder">ID</label>
+                                    <div class="col-sm-9">
+                                        {{$Dnrp->prsn_kd}}
+                                    </div>
+                                </div>
+                                <hr/>
+                                <div class="form-group row align-items-center">
                                     <label class="col-sm-3 col-form-label font-weight-bolder">Nama Pasien</label>
                                     <div class="col-sm-9">
-                                        {{$Dnrp->prsn_nm}}
+                                        {{ucwords(strtolower(stripslashes($Dnrp->prsn_nm)))}}
                                     </div>
                                 </div>
                                 <hr/>
@@ -72,9 +84,11 @@
                                     <label class="col-sm-3 col-form-label font-weight-bolder">Kebutuhan</label>
                                     <div class="col-sm-9">
                                         Butuh : {{$Dnrp->dnr_bth}} <br />
-                                        Tambah : {{$Dnrp->dnr_tmbh}}<br/> 
+                                        {{-- Tambah : {{$Dnrp->dnr_tmbh}}<br/> 
                                         Terpenuhi : {{$Dnrp->total}} <br />
-                                        <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modalAddTmbh" onclick="resetForm('modalAddTmbhF'); addFill('dnr_idTmbh', '{{$Dnrp->dnr_id}}'); addFill('prsn_nikTmbh', '{{$Dnrp->prsn_nik}}'); addFill('prsn_nmTmbh', '{{$Dnrp->prsn_nm}}'); addFill('dnr_bthTmbh', '{{$Dnrp->dnr_bth}}'); addFill('tipeTmbh', 'D');"><i class="fas fa-sync"></i></button>
+                                        @if ($Utama)
+                                            <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modalAddTmbh" onclick="resetForm('modalAddTmbhF'); addFill('dnr_idTmbh', '{{$Dnrp->dnr_id}}'); addFill('prsn_nikTmbh', '{{$Dnrp->prsn_nik}}'); addFill('prsn_nmTmbh', '{{$Dnrp->prsn_nm}}'); addFill('dnr_bthTmbh', '{{$Dnrp->dnr_bth}}'); addFill('tipeTmbh', 'D');"><i class="fas fa-sync"></i></button>
+                                        @endif --}}
                                     </div>
                                 </div>
                                 <hr/>
@@ -118,9 +132,16 @@
                                     </div>
                                     <hr/>
                                     <div class="form-group row align-items-center">
+                                        <label class="col-sm-3 col-form-label font-weight-bolder">Pekerjaan</label>
+                                        <div class="col-sm-9">
+                                            {{$Dnrp->krj_nm}}<br/>
+                                        </div>
+                                    </div>
+                                    <hr/>
+                                    <div class="form-group row align-items-center">
                                         <label class="col-sm-3 col-form-label font-weight-bolder">Alamat</label>
                                         <div class="col-sm-9">
-                                            {{$Dnrp->prsn_altAltT}}
+                                            {{ucwords(strtolower(stripslashes($Dnrp->prsn_altAltT)))}}
                                         </div>
                                     </div>
                                     
@@ -132,6 +153,13 @@
                                     <label class="col-sm-3 col-form-label font-weight-bolder">Jenis Kontak</label>
                                     <div class="col-sm-9">
                                         {{$Dnrp->ktk_nm}}
+                                    </div>
+                                </div>
+                                <hr/>
+                                <div class="form-group row align-items-center">
+                                    <label class="col-sm-3 col-form-label font-weight-bolder">ID</label>
+                                    <div class="col-sm-9">
+                                        {{$Dnrp->Ktk->prsn_kd}}
                                     </div>
                                 </div>
                                 <hr/>
@@ -172,12 +200,23 @@
                                 </div>
                                 <hr/>
                                 <div class="form-group row align-items-center">
-                                    <label class="col-sm-3 col-form-label font-weight-bolder">Alamat</label>
+                                    <label class="col-sm-3 col-form-label font-weight-bolder">Pekerjaan</label>
                                     <div class="col-sm-9">
-                                        {{$Dnrp->Ktk->prsn_altAltT}}
+                                        {{$Dnrp->Ktk->krj_nm}}
                                     </div>
                                 </div>
                                 <hr/>
+                                <div class="form-group row align-items-center">
+                                    <label class="col-sm-3 col-form-label font-weight-bolder">Alamat</label>
+                                    <div class="col-sm-9">
+                                        {{ucwords(strtolower(stripslashes($Dnrp->Ktk->prsn_altAltT)))}}
+                                    </div>
+                                </div>
+                                <hr/>
+                                
+                            </div>
+                            <div class="tab-pane fade" id="lokasi" role="tabpanel" aria-labelledby="lokasi-tab" >
+                                @include('dnrp.detailLok')
                                 
                             </div>
                         </div>
@@ -190,7 +229,11 @@
         <div class="col-md-4 order-md-1">
             <div class="card">
                 <div class="card-body">
-                    <button type="button" class="btn btn-warning w-100 my-1" onclick="showForm('{{$IdForm}}card', 'block'); cActForm('{{$IdForm}}', '{{route('dnrp.update')}}'); $('.slide-page').css('margin-left', '0'); $('.display1').show();loadStepPrsn('{{$Dnrp['dnrprsn_prsn']}}'); loadStepKtk('{{$Dnrp['dnrktk_prsn']}}'); addFill('dnr_ktk', '{{$Dnrp['dnr_ktk']}}'); addFill('dnr_bth', '{{$Dnrp['dnr_bth']}}'); addFill('dnr_org', '{{$Dnrp['dnr_org']}}'); addFill('dnr_sft', '{{$Dnrp['dnr_sft']}}'); addFill('dnr_tgl', '{{$Dnrp['dnr_tgl']}}'); addFill('dnr_id', '{{$Dnrp['dnr_id']}}'); $('#{{$IdForm}}').attr('data-url-load', '{{url('dnrp/loadView/'.$dnr_id)}}');"><i class="fas fa-pen"></i> UBAH</button>
+                    @if ($Utama)
+                        @if ($Dnrp->dnr_send=="0")
+                            <button type="button" class="btn btn-warning w-100 my-1" onclick="showForm('{{$IdForm}}card', 'block'); cActForm('{{$IdForm}}', '{{route('dnrp.update')}}'); $('.slide-page').css('margin-left', '0'); $('.display1').show();loadStepPrsn('{{$Dnrp['dnrprsn_prsn']}}'); loadStepKtk('{{$Dnrp['dnrktk_prsn']}}'); addFill('dnr_ktk', '{{$Dnrp['dnr_ktk']}}'); addFill('dnr_bth', '{{$Dnrp['dnr_bth']}}'); addFill('dnr_org', '{{$Dnrp['dnr_org']}}'); addFill('dnr_sft', '{{$Dnrp['dnr_sft']}}'); addFill('dnr_tgl', '{{$Dnrp['dnr_tgl']}}'); addFill('dnr_id', '{{$Dnrp['dnr_id']}}'); $('#{{$IdForm}}').attr('data-url-load', '{{url('dnrp/loadView/'.$dnr_id)}}');"><i class="fas fa-pen"></i> UBAH</button>
+                        @endif
+                    @endif
                     <a href="{{route('dnrp.index')}}" class="btn btn-danger w-100 my-1"><i class="fa fa-reply"></i> KEMBALI</a> 
                 </div>
             </div>
@@ -211,9 +254,15 @@
                             </div>
                         </div>
                         <div class="form-group row align-items-center">
+                            <label class="col-12 col-form-label font-weight-bolder">Pekerjaan</label>
+                            <div class="col-12">
+                                {{$Dnrp->krj_nm}}<br/>
+                            </div>
+                        </div>
+                        <div class="form-group row align-items-center">
                             <label class="col-12 col-form-label font-weight-bolder">Alamat</label>
                             <div class="col-12">
-                                {{$Dnrp->prsn_altAltT}}
+                                {{ucwords(strtolower(stripslashes($Dnrp->prsn_altAltT)))}}
                             </div>
                         </div>
                     </form>
@@ -222,11 +271,3 @@
         </div>
     @endif
 </div>
-
-{{-- <script>
-    function table(){
-        setTimeout(() => {
-            dTD('table#kegdDetailTable');
-        }, 500);
-    };
-</script> --}}

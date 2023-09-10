@@ -45,6 +45,7 @@
                                         $('#prsn_golDnrm').val(data.prsn_gol);
                                         $('#prsn_telpDnrm').val(data.prsn_telp);
                                         $('#prsn_waDnrm').val(data.prsn_wa);
+                                        $('#prsn_krjDnrm').val(data.prsn_krj);
                                         getSelect(data.kec_id, data.desa_id, 'prsn_desaDnrm');
                                     },
                                     error: function(xhr) {
@@ -66,6 +67,8 @@
                                             .append('<option hidden value="">Pilih Salah Satu Desa/Kelurahan</option>')
                                             .val('');
                                         $('#prsn_golDnrm').val('');
+                                        $('#prsn_krjDnrm').val('');
+
                                     }
                                 });
                             }else{
@@ -127,6 +130,15 @@
                             <option hidden value="">Pilih Salah Satu Pilihan</option>
                             @foreach ($Gol as $tk)
                                 <option value="{{$tk['gol_id']}}">{{$tk['gol_nm']}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group p-4 mb-0 pb-0 required col-md-6 col-sm-12">
+                        <label class="control-label" for="prsn_krjDnrm">Pekerjaan</label>
+                        <select class="form-control" id="prsn_krjDnrm" name="prsn_krj" required>
+                            <option hidden value="">Pilih Salah Satu Pilihan</option>
+                            @foreach ($Krj as $tk)
+                                <option value="{{$tk['krj_id']}}">{{$tk['krj_nm']}}</option>
                             @endforeach
                         </select>
                     </div>
@@ -203,7 +215,7 @@
                                     url:"{{url('dnrm/loadDnrp/'.$dnr_id)}}",
                                     success: function(data1) {
                                         $('#dnrmAddDatadata').html(data1);
-                                        showToast(data.response.message, 'success');
+                                        // showToast(data.response.message, 'success');
                                     },
                                     error:function(xhr) {
                                         window.location.reload();

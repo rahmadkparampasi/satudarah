@@ -71,7 +71,8 @@
 
                             <img src="/assets/img/Logo-L-1.png" class="w-100"/>
                             <h1 class="text-center">Dariku Untukmu</h1>
-                            <p class="text-center"><a href="{{route('register')}}" class="primary-btn">Daftar Sekarang<span class="lnr lnr-arrow-right"></span></a></p>
+                            <p class="text-center mb-1"><a href="{{route('register')}}" class="primary-btn">Daftar Sekarang<span class="lnr lnr-arrow-right"></span></a></p>
+                            <p class="text-center"><a href="{{route('login')}}" class="primary-btn">Masuk<span class="lnr lnr-arrow-right"></span></a></p>
                             
                             <p class="text-center">Apa itu Satu Darah? Silahkan Gulir (<em>Scroll</em>) Kebawah Untuk Membaca Deskripsi</p>
                         </div>
@@ -96,7 +97,7 @@
                     <div class="col-md-8 col-sm-6">
                         <div class="studio-content">
                             <h2>Tentang Satu Darah</h2>
-                            <p>Permintaan donor darah Kabupaten Parigi Moutong setiap tahun terjadi peningkatan, dimana setiap harinya dibutuhkan hingga 50 kantung darah untuk pasien dengan berbagai macam kebutuhan. Kenaikan permintaan ini mempunyai tantangan tersendiri untuk mencari pendonor darah dikarenakan keterbatasan informasi yang tersebar.<br/><br/>
+                            <p class="text-justify">Permintaan donor darah Kabupaten Parigi Moutong setiap tahun terjadi peningkatan, dimana setiap harinya dibutuhkan hingga 50 kantung darah untuk pasien dengan berbagai macam kebutuhan. Kenaikan permintaan ini mempunyai tantangan tersendiri untuk mencari pendonor darah dikarenakan keterbatasan informasi yang tersebar.<br/><br/>
 
                                 Informasi permintaan donor darah kadang hanya melalui berita mulut ke mulut atau penyebaran pesan menggunakan media sosial yang dilakukan secara mandiri oleh anggota keluarga pasien yang pastinya sebaran informasi sangat kurang efektif karena yang menerima pesan tersebut hanya lingkaran pertemanan.<br/><br/>
                                 
@@ -138,37 +139,37 @@
 					<div class="col-lg-4 col-md-6">
 						<div class="single-address text-center">
 							<h6>1. Registrasi Penerima Donor Darah:</h6>
-							<p>Penerima donor darah yang membutuhkan dukungan untuk mendapatkan darah mendaftar melalui aplikasi dengan menyediakan informasi penting tentang kebutuhan dan kondisi kesehatannya.</p>
+							<p class="text-justify">Penerima donor darah yang membutuhkan dukungan untuk mendapatkan darah mendaftar melalui aplikasi dengan menyediakan informasi penting tentang kebutuhan dan kondisi kesehatannya.</p>
 						</div>
 					</div>
 					<div class="col-lg-4 col-md-6">
 						<div class="single-address text-center">
 							<h6>2. Verifikasi dan Kategorisasi:</h6>
-							<p>Unit transfusi darah memverifikasi data penerima dan mengkategorisasi berdasarkan jenis golongan darah, kebutuhan darah, dan prioritas mendesak.</p>
+							<p class="text-justify">Unit transfusi darah memverifikasi data penerima dan mengkategorisasi berdasarkan jenis golongan darah, kebutuhan darah, dan prioritas mendesak.</p>
 						</div>
 					</div>
 					<div class="col-lg-4 col-md-6">
 						<div class="single-address text-center">
 							<h6>3. Informasi ke Pengguna WhatsApp:</h6>
-							<p>Aplikasi mengirimkan pesan secara personal kepada pengguna WhatsApp yang sesuai dengan kategori dan kebutuhan penerima donor darah.</p>
+							<p class="text-justify">Aplikasi mengirimkan pesan secara personal kepada pengguna WhatsApp yang sesuai dengan kategori dan kebutuhan penerima donor darah.</p>
 						</div>
 					</div>
 					<div class="col-lg-4 col-md-6">
 						<div class="single-address text-center">
 							<h6>4. Notifikasi Ketersediaan Darah:</h6>
-							<p>Jika terdapat donor darah yang sesuai, penerima akan diberitahu secara personal melalui pesan WhatsApp, termasuk informasi tentang tanggal, waktu, dan lokasi pendonoran.</p>
+							<p class="text-justify">Jika terdapat donor darah yang sesuai, penerima akan diberitahu secara personal melalui pesan WhatsApp, termasuk informasi tentang tanggal, waktu, dan lokasi pendonoran.</p>
 						</div>
 					</div>
 					<div class="col-lg-4 col-md-6">
 						<div class="single-address text-center">
 							<h6>5. Interaksi dengan Penerima:</h6>
-							<p>Pengguna WhatsApp yang berminat menjadi pendonor akan dapat berinteraksi secara langsung dengan penerima donor darah untuk mendapatkan informasi lebih lanjut dan mengkoordinasikan proses donasi.</p>
+							<p class="text-justify">Pengguna WhatsApp yang berminat menjadi pendonor akan dapat berinteraksi secara langsung dengan penerima donor darah untuk mendapatkan informasi lebih lanjut dan mengkoordinasikan proses donasi.</p>
 						</div>
 					</div>
 					<div class="col-lg-4 col-md-6">
 						<div class="single-address text-center">
 							<h6>6. Koordinasi dan Follow-up: </h6>
-							<p>Aplikasi membantu dalam koordinasi antara penerima dan calon pendonor darah, dan memberikan pembaruan terkait ketersediaan darah hingga proses donasi selesai.</p>
+							<p class="text-justify">Aplikasi membantu dalam koordinasi antara penerima dan calon pendonor darah, dan memberikan pembaruan terkait ketersediaan darah hingga proses donasi selesai.</p>
 						</div>
 					</div>
 					<div class="col-12">
@@ -240,13 +241,13 @@
                         <div class="achivement-content">
                             <h2>Apa Fungsi Dari Permintaan Data Ini?</h2>
 
-                            <p class="mb-30">Penggunaan data penduduk sangat penting dalam membantu penyampaian informasi donor darah yang efektif. Berikut adalah penjelasan singkat mengenai bagaimana data penduduk dapat berperan dalam hal ini:</p>
+                            <p class="mb-30 text-justify">Penggunaan data penduduk sangat penting dalam membantu penyampaian informasi donor darah yang efektif. Berikut adalah penjelasan singkat mengenai bagaimana data penduduk dapat berperan dalam hal ini:</p>
 
                                 <ol type="1" style="list-style: decimal">
-                                    <li>Identifikasi target sasaran: Data penduduk memungkinkan kita untuk mengidentifikasi kelompok penduduk tertentu yang menjadi target kampanye donor darah. Informasi seperti usia, jenis kelamin, dan lokasi geografis dapat membantu menentukan kelompok yang paling mungkin untuk menjadi pendonor.</li>
-                                    <li>Penentuan lokasi dan waktu: Dengan menggunakan data penduduk, kita dapat menentukan lokasi dan waktu yang strategis untuk menyelenggarakan kampanye donor darah. Misalnya, berdasarkan data demografis, kita dapat memilih tempat yang ramai dikunjungi oleh target sasaran atau menentukan waktu yang sesuai untuk mencapai jumlah pendonor maksimal.</li>
-                                    <li>Personalisasi pesan dan kampanye: Data penduduk memungkinkan kita untuk personalisasi pesan dan kampanye informasi donor darah. Misalnya, kita dapat menyesuaikan pesan sesuai dengan kelompok usia atau kepentingan khusus lainnya yang relevan dengan pendonor potensial.</li>
-                                    <li>Evaluasi efektivitas kampanye: Dengan data penduduk, kita dapat melakukan evaluasi terhadap efektivitas kampanye donor darah yang telah dilakukan. Informasi ini membantu kita memahami apa yang berhasil dan apa yang perlu ditingkatkan untuk kampanye selanjutnya.</li>
+                                    <li class="text-justify">Identifikasi target sasaran: Data penduduk memungkinkan kita untuk mengidentifikasi kelompok penduduk tertentu yang menjadi target kampanye donor darah. Informasi seperti usia, jenis kelamin, dan lokasi geografis dapat membantu menentukan kelompok yang paling mungkin untuk menjadi pendonor.</li>
+                                    <li class="text-justify">Penentuan lokasi dan waktu: Dengan menggunakan data penduduk, kita dapat menentukan lokasi dan waktu yang strategis untuk menyelenggarakan kampanye donor darah. Misalnya, berdasarkan data demografis, kita dapat memilih tempat yang ramai dikunjungi oleh target sasaran atau menentukan waktu yang sesuai untuk mencapai jumlah pendonor maksimal.</li>
+                                    <li class="text-justify">Personalisasi pesan dan kampanye: Data penduduk memungkinkan kita untuk personalisasi pesan dan kampanye informasi donor darah. Misalnya, kita dapat menyesuaikan pesan sesuai dengan kelompok usia atau kepentingan khusus lainnya yang relevan dengan pendonor potensial.</li>
+                                    <li class="text-justify">Evaluasi efektivitas kampanye: Dengan data penduduk, kita dapat melakukan evaluasi terhadap efektivitas kampanye donor darah yang telah dilakukan. Informasi ini membantu kita memahami apa yang berhasil dan apa yang perlu ditingkatkan untuk kampanye selanjutnya.</li>
                                 </ol>
                                 <br/>
                                <p>Dengan menggunakan data penduduk secara bijaksana, kita dapat mengoptimalkan penyampaian informasi donor darah dan meningkatkan partisipasi masyarakat dalam aksi sosial yang sangat berarti ini.
@@ -357,42 +358,67 @@
                    type: 'doughnut', 
                    data: dataJk, 
                    options: {
-                       maintainAspectRatio: false,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            labels: {
+                                render: (args) => {
+                                    return " "+args.label+" "+args.value+" "
+                                },
+                                fontSize: 14,
+                                fontColor: '#2b2b2b',
+                                position: 'outside'
+                            }
+                        }
                    }
                });
                const dataGol = {
                    labels: [
                        @foreach ($countPrsnGol as $tk)
-                           '{{$tk->gol_nm}}',
-   
+                           '{{$tk->gol_grup}}',
                        @endforeach
                    ],
                    datasets: [{
-                       label: 'Data Personal Berdasarkan Golongan Darah',
-                       data: [
-                           @foreach ($countPrsnGol as $tk)
-                               '{{$tk->total}}',
-   
-                           @endforeach
-                       ],
-                       // backgroundColor: [
-                       // 'rgb(255, 99, 132)',
-                       // 'rgb(54, 162, 235)',
-                       // ],
-                       hoverOffset: 4
+                        label: 'Data Personal Berdasarkan Golongan Darah',
+                        data: [
+                            @foreach ($countPrsnGol as $tk)
+                                '{{$tk->total}}',
+    
+                            @endforeach
+                        ],
+                        backgroundColor: [
+                        'rgb(54,162,235)',
+                        'rgb(255,99,132)',
+                        'rgb(255,255,255)',
+                        'rgb(255,205,86)',
+                        ],
+                        borderColor: ['rgb(0,0,0)'],
+                        borderWidth: 2,
+                        hoverOffset: 4
                    }]
                };
                new Chart('chartPrsnGol', {
                    type: 'doughnut', 
                    data: dataGol, 
                    options: {
-                       maintainAspectRatio: false,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            labels: {
+                                render: (args) => {
+                                    return " "+args.label+" "+args.value+" "
+                                },
+                                fontSize: 14,
+                                fontColor: '#2b2b2b',
+                                position: 'outside'
+                            }
+                        }
                    }
                });
            });
        }
    </script>
    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <script src="https://unpkg.com/chart.js-plugin-labels-dv/dist/chartjs-plugin-labels.min.js"></script>
+   
     {{-- @include('includes.anotherscript') --}}
     {{-- @include('includes.ajaxinsert') --}}
     <!-- Required Js -->

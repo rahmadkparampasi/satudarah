@@ -147,4 +147,5 @@ return [
 
     'attributes' => [
     ],
+    "alpha_spaces"     => ":attribute hanya boleh berisi huruf dan spasi.",
 ];

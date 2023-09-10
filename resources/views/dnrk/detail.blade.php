@@ -21,6 +21,9 @@
     <div class="col-12" id="{{$IdForm}}data">
         @include('dnrk.detailDetail')
     </div>
+    <div class="col-12" id="dnrmFormAddDatadata">
+        @include('dnrk.addDataDnr')
+    </div>
     <div class="col-12" id="dnrmAddDatadata">
         @include('dnrk.detailDnr')
     </div>
@@ -28,7 +31,7 @@
 <script>
     function loadDetail(){
         $.ajax({
-            url:"{{url('dnrm/loadDnrm/'.$dnr_id)}}",
+            url:"{{url('dnrm/loadDnrk/'.$dnr_id)}}",
             success: function(data1) {
                 $('#dnrmAddDatadata').html(data1);
             },
@@ -104,7 +107,9 @@
         ambilDataSelect(idSelectDesa, '/desa/getDataJson/'+kec_id_ex, 'Pilih Salah Satu Desa/Kelurahan', toRemove=[idSelectDesa], removeMessage=['Pilih Salah Satu Desa/Kelurahan'], '', desa_id_ex);
     }
 </script>
-@include('dnrk.modalAddDnr')
+{{-- @include('dnrk.modalAddDnr') --}}
+@include('dnrlok.modalAddDnrlok')
+@include('dnrk.modalAddPrsn')
 
 @include('includes.anotherscript')
 @include('includes.ajaxinsertTV')

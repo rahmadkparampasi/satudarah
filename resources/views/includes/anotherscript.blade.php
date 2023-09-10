@@ -253,6 +253,37 @@
         xhr.send();
     }
 
+    function callOtherTWPNR(pesan, link) {
+        Swal.fire({
+            title: 'Apakah Anda Menyutui?',
+            text: pesan,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#2ecc71',
+            cancelButtonColor: '#e74c3c',
+            confirmButtonText: 'Setuju',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.value) {
+                showAnimated();
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', link, true);
+                xhr.onload = function() {
+                    if (this.status == 200) {
+                        let data = JSON.parse(xhr.responseText);
+                        hideAnimated();
+                        showToast(data.response.message, 'success');
+                    } else {
+                        hideAnimated();
+                        let data = JSON.parse(xhr.responseText);
+                        showToast(data.response.message, 'danger');
+                    }
+                }
+                xhr.send();
+            }
+        });
+    }
+
     function callOtherWF(pesan, link, func, locationend = '', vari = '') {
         Swal.fire({
             title: 'Apakah Anda Menyutui?',
@@ -394,6 +425,7 @@
                                         }
                                     });
                                 }else{
+
                                     swal.fire({
                                     title: "Terima Kasih",
                                     text: data.response.message,
@@ -568,15 +600,16 @@
         });
     }
 
-    function showForm(idForm, sD = "") {
+    function showForm(idForm, sD = "", top = 'yes') {
         let idFormShow = document.getElementById(idForm);
         if (sD == '') {
             idFormShow.style.display = "flex";
         } else {
             idFormShow.style.display = sD;
         }
-
-        window.scrollTo(0, 0);
+        if (top=='yes') {
+            window.scrollTo(0, 0);
+        }
     }
 
     function showFormNS(idForm, sD = "") {

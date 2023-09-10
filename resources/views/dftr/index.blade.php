@@ -103,13 +103,7 @@
                                         <strong>{{session('registerError')}}</strong>
                                     </div>
                                 @endif
-                                <div class="form-group mb-3 text-left">
-                                    <label class="control-label text-dark font-weight-bold" for="prsn_nik">NIK (Nomor Induk Kependudukan)</label>
-                                    <input type="text" class="form-control dftrReg" placeholder="NIK" id="prsn_nik" name="prsn_nik" value="{{old('prsn_nik')}}" required>
-                                    @error('registerError')
-                                        <div class="invalid-feedback">{{$message}}</div>
-                                    @enderror
-                                </div>
+                               
                                 <div class="form-group mb-3 text-left">
                                     <label class="control-label text-dark font-weight-bold" for="prsn_nm">Nama Lengkap</label>
                                     <input type="text" class="form-control dftrReg" placeholder="Nama Lengkap" id="prsn_nm" name="prsn_nm" value="{{old('prsn_nm')}}" required>
@@ -174,7 +168,7 @@
                                     @enderror
                                 </div>
                                 <div class="form-group mb-3 text-left">
-                                    <label class="control-label text-dark font-weight-bold" for="prsn_desa">Golongan Darah</label>
+                                    <label class="control-label text-dark font-weight-bold" for="prsn_gol">Golongan Darah</label>
                                     <select type="text" class="form-control dftrReg" placeholder="Golongan Darah" id="prsn_gol" name="prsn_gol" value="{{old('prsn_gol')}}" required>
                                         <option value="" hidden>Pilih Golongan Darah</option>
                                         <option value="">Tidak Tahu</option>
@@ -189,6 +183,18 @@
                                 <div class="form-group mb-3 text-left">
                                     <label class="control-label text-dark font-weight-bold" for="prsn_telp">Telepon</label>
                                     <input type="text" class="form-control dftrReg" placeholder="Nomor Telepon" id="prsn_telp" name="prsn_telp" value="{{old('prsn_telp')}}" required>
+                                    @error('registerError')
+                                        <div class="invalid-feedback">{{$message}}</div>
+                                    @enderror
+                                </div>
+                                <div class="form-group mb-3 text-left">
+                                    <label class="control-label text-dark font-weight-bold" for="prsn_krj">Pekerjaan</label>
+                                    <select type="text" class="form-control dftrReg" placeholder="Pekerjaan" id="prsn_krj" name="prsn_krj" value="{{old('prsn_krj')}}" required>
+                                        <option value="" hidden>Pilih Pekerjaan</option>
+                                        @foreach ($Krj as $tk)
+                                            <option value="{{$tk['krj_id']}}" {{ old('prsn_krj') == $tk['krj_id'] ? 'selected' : '' }}>{{$tk['krj_nm']}}</option>
+                                        @endforeach
+                                    </select>
                                     @error('registerError')
                                         <div class="invalid-feedback">{{$message}}</div>
                                     @enderror
@@ -219,8 +225,6 @@
                                             $('#modalConcent').modal('show'); 
 
                                         });
-                                        $('#contNik').html($('#prsn_nik').val());
-                                        $('#contNik2').html($('#prsn_nik').val());
                                         $('#contNm').html($('#prsn_nm').val());
                                         $('#contNm2').html($('#prsn_nm').val());
                                         $('#contTmptLhr').html($('#prsn_tmptlhr').val());
@@ -229,6 +233,7 @@
                                         $('#contKec').html($('#prsn_kec option:selected').text());
                                         $('#contDesa').html($('#prsn_desa option:selected').text());
                                         $('#contGol').html($('#prsn_gol option:selected').text());
+                                        $('#contKrj').html($('#prsn_krj option:selected').text());
                                         $('#contTelp').html($('#prsn_telp').val());
 
                                         var dTglLhr = new Date($('#prsn_tgllhr').val());
@@ -256,8 +261,7 @@
                                     }
                                     function resetFormCont(){
                                         $('#prsn_consent').prop('checked', false);
-                                        $('#contNik').html('');
-                                        $('#contNik2').html('');
+                                        
                                         $('#contNm').html('');
                                         $('#contNm2').html('');
                                         $('#contTmptLhr').html('');
@@ -269,6 +273,8 @@
                                         $('#contTelp').html('');
                                         $('#contTglLhr').html('');
                                         $('#contTgl').html('');
+                                        $('#contKrj').html('');
+
                                     }
 
                                     function GetMonthName(monthNumber) {
@@ -297,6 +303,7 @@
                                 </div>
                                 
                                 <button type="submit" class="btn btn-block btn-primary mb-2 py-3"><i class="fa fa-check text-white"></i> DAFTAR</button>
+                                <p class="mb-2 text-center">Sudah punya akun? <a href="{{route('login')}}" class="f-w-400 text-primary">Masuk Disini</a></p>
                                 <a href="{{url('')}}" class="btn btn-block btn-info mb-4 py-3"><i class="fa fa-home text-white"></i>  BERANDA</a>
                                 <div class="copyright text-center text-sm text-muted text-lg-start mb-50">
                                     © 2023 - <script>

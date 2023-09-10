@@ -7,11 +7,6 @@
                 <div class="modal-body">
                     <table>
                         <tr>
-                            <td class="font-weight-bold">NIK</td>
-                            <td class="font-weight-bold">:</td>
-                            <td class="font-weight-bold" id="contNik">__________________________</td>
-                        </tr>
-                        <tr>
                             <td class="font-weight-bold">Nama Lengkap</td>
                             <td class="font-weight-bold">:</td>
                             <td class="font-weight-bold" id="contNm">__________________________</td>
@@ -30,6 +25,11 @@
                             <td class="font-weight-bold">Jenis Kelamin</td>
                             <td class="font-weight-bold">:</td>
                             <td class="font-weight-bold" id="contJk">__________________________</td>
+                        </tr>
+                        <tr>
+                            <td class="font-weight-bold">Pekerjaan</td>
+                            <td class="font-weight-bold">:</td>
+                            <td class="font-weight-bold" id="contKrj">__________________________</td>
                         </tr>
                         <tr>
                             <td class="font-weight-bold">Alamat</td>
@@ -76,11 +76,7 @@
                             <td class="font-weight-bold">:</td>
                             <td class="font-weight-bold" id="contNm2">__________________________</td>
                         </tr>
-                        <tr>
-                            <td class="font-weight-bold">NIK</td>
-                            <td class="font-weight-bold">:</td>
-                            <td class="font-weight-bold" id="contNik2">__________________________</td>
-                        </tr>
+                       
                         <tr>
                             <td class="font-weight-bold">Tanggal</td>
                             <td class="font-weight-bold">:</td>

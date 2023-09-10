@@ -25,7 +25,7 @@ class User extends Authenticatable
 
     public $timestamps = false;
 
-    protected $fillable = ['users_id', 'username', 'password', 'users_tipe', 'users_act', 'users_reg'];
+    protected $fillable = ['users_id', 'username', 'password', 'users_tipe', 'users_act', 'users_reg', 'users_prsn'];
 
     /**
      * The attributes that should be hidden for serialization.

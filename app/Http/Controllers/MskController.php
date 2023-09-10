@@ -38,6 +38,24 @@ class MskController extends Controller
         return view('msk.index', $this->data);
     }
 
+    public function login()
+    {
+        if (Auth::user()) {
+            return redirect()->intended();
+        }
+
+        $this->data['ButtonMethod'] = 'SIMPAN';
+        $this->data['MethodForm'] = 'insertData';
+        $this->data['IdForm'] = 'mskAddData';
+        $this->data['UrlForm'] = 'msk';
+
+        $this->data['MethodForm1'] = substr($this->data['MethodForm'], 0, 10);
+
+        $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
+
+        return view('msk.indexLog', $this->data);
+    }
+
     public function reloadCaptcha()
     {
         return response()->json(['captcha'=> captcha_img('flat')]);
@@ -58,9 +76,31 @@ class MskController extends Controller
                 Auth::logout();
                 return back()->with(['loginError'=> 'Data Pengguna Tidak Aktif, Silahkan Hubungi Bagian Adminstrator Aplikasi']);
             }
-            if (Auth::user()->users_reg == '0') {
+            $request->session()->regenerate();
+            $user = Auth::user();
+            if($user){
+                return redirect()->intended();            
+            }else{
+                return back()->with(['loginError'=> 'Tidak Ada Pengguna Yang Dimaksud']);
+            }
+        }
+        return back()->withErrors(['loginError' => 'Username Atau Password Salah'])->withInput($request->input());
+    }
+
+    public function authLogin(Request $request)
+    {
+
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required',
+            'captcha' => 'required|captcha'
+        ]);
+        $credentials = $request->only('username','password');
+
+        if (Auth::attempt($credentials)) {
+            if (Auth::user()->users_act == '0') {
                 Auth::logout();
-                return back()->with(['loginError'=> 'Data Pengguna Belum Di Verifikasi, Silahkan Verifikasi WhatsApp']);
+                return back()->with(['loginError'=> 'Data Pengguna Tidak Aktif, Silahkan Hubungi Bagian Adminstrator Aplikasi']);
             }
             $request->session()->regenerate();
             $user = Auth::user();

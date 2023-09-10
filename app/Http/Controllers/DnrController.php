@@ -74,7 +74,7 @@ class DnrController extends Controller
                 }
                 $data[$i]->dnr_tmptAltT = $data[$i]->dnr_tmpt.", ".$data[$i]->dnr_tmptAltT.$data[$i]->desa_nama.", Kec. ".$data[$i]->kec_nama;
 
-                $data[$i]->dnr_sftAltT = "Biasa";
+                $data[$i]->dnr_sftAltT = "Tidak Urgent";
                 if ($data[$i]->dnr_sft!='U') {
                     $data[$i]->dnr_sftAltT = "Urgent";
                 }
@@ -114,7 +114,7 @@ class DnrController extends Controller
             $data->dnr_tmptAltT = $data->dnr_tmpt.", ".$data->dnr_tmptAltT.$data->desa_nama.", Kec. ".$data->kec_nama;
 
 
-            $data->dnr_sftAltT = "Biasa";
+            $data->dnr_sftAltT = "Tidak Urgent";
             if ($data->dnr_sft!='U') {
                 $data->dnr_sftAltT = "Urgent";
             }
