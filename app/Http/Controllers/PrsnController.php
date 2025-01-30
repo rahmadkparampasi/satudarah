@@ -18,6 +18,23 @@ use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx as Reader;
 use Picqer\Barcode\Barcode;
 use Picqer\Barcode\BarcodeGeneratorPNG;
+use TCPDF;
+
+class MYPDF extends TCPDF
+{
+    public function Header()
+    {
+        
+    }
+    public function footer()
+    {
+        $this->setY(-15);
+        $this->setFont('helvetica', 'I', 8);
+        // $this->Cell(0, 10, 'Page ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages() . '    ' . '*** ' . date("Y-m-d") . ' ***', 0, false, 'C', 0, '', 0, false, 'T', 'M');
+        $footer = '<p align="center">Page ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages() . '    ' . '*** ' . date("Y-m-d") . ' ***</p><br/><p align="center"><b>E-INM</b></p>';
+        $this->writeHTML($footer, true, false, false, false, '');
+    }
+}
 
 class PrsnController extends Controller
 {
@@ -56,7 +73,7 @@ class PrsnController extends Controller
 
         $this->data['DisplayForm'] = $this->setDisplay($this->data['MethodForm']);
 
-        $this->data['Prsn'] = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_ord', 'desc')->limit(20)->get();
+        $this->data['Prsn'] = PrsnModel::leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc'])->orderBy('prsn_ord', 'desc')->limit(100)->get();
         $this->data['Prsn'] = PrsnController::setData($this->data['Prsn']);
 
         $this->data['Gol'] = GolController::getDataActStat();
@@ -351,6 +368,136 @@ class PrsnController extends Controller
         }
 
         return response()->json($Prsn, 200);
+    }
+
+    static function generateTablePDF($data, $pb = '', $dateA = '', $dateB = '')
+    {
+        $dpri = '<br '.$pb.'><p><strong><font size="12" >DATA PERSONAL PENDAFTAR PERIODE '.$dateA.' - '.$dateB.'<font></strong></p>';
+
+        $tblhar = '<table nobr="false" cellspacing="0" cellpadding="6" border="1" width="100%" style="font-size:9pt;">
+            <thead>
+                <tr>
+                    <th align="center" width="5%">No</th>
+                    <th align="center" width="12%" class="text-wrap">Tanggal Daftar</th>
+                    <th align="center" width="14%" class="text-wrap">Kode</th>
+                    <th align="center" width="18%" class="text-wrap">Nama Lengkap</th>
+                    <th align="center" width="15%" class="text-wrap">Telepon</th>
+                    <th align="center" width="16%" class="text-wrap">TTL / Umur</th>
+                    <th align="center" width="10%" class="text-wrap">Jenis Kelamin</th>
+                    <th align="center" width="10%" class="text-wrap">Golongan Darah</th>
+                </tr>
+            </thead>
+            <tbody>';
+        if (count($data)==0) {
+            $tblhar .= '<tr><td colspan="8" align="center" width="100%">Tidak Ada Data</td></tr>';
+        }else{
+        
+            $no = 1;
+            foreach ($data as $tk) {
+                
+                $tblhar .= '<tr nobr="true">
+                <td align="center" width="5%">' . $no++ . '</td>
+                <td align="left" width="12%">' . $tk->prsn_create . '</td>
+                <td align="left" width="14%">' . $tk->prsn_kd . '</td>
+                <td align="left" width="18%">' . ucwords(strtolower(stripslashes($tk->prsn_nm))) . '</td>
+                <td align="left" width="15%">' . $tk->prsn_telp . '</td>
+                <td align="left" width="16%">' . ucwords(strtolower(stripslashes($tk->prsn_tmptlhr).', '.$tk->prsn_tgllhrAltT)) . '<br/>Umur'.$tk->umur.'</td>
+                <td align="left" width="10%">' . $tk->prsn_jkAltT . '</td>
+                <td align="left" width="10%">' . $tk->gol_nm . '</td>
+                </tr>';
+            }
+        }
+
+        $tblhar .= '</tbody><tfoot>
+        <tr>
+        <td colspan="5" align="center" width="64%"><strong>Jumlah Pendaftar</strong></td>
+        <td colspan="3" align="center" width="36%"><strong>'.(string)count($data).'</strong></td>
+        </tr>
+        </tfoot></table>';
+        
+        return [$dpri, $tblhar];
+    }
+
+    public function viewPdf($dateA = '', $dateB = '')
+    {
+        ob_start();
+
+        $pdf = new MYPDF('L', 'mm', 'Legal', true, 'UTF-8', false);
+
+        $pdf->setCreator(PDF_CREATOR);
+        //Bug
+        $pdf->setAuthor('Kirana Tri Gemilang');
+        $pdf->setTitle('E-INM');
+        $pdf->setSubject('Indikator Mutu Nasional');
+        $pdf->setKeywords('E-INM');
+
+        $pdf->setHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE, PDF_HEADER_STRING);
+        $pdf->setHeaderFont(array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+        $pdf->setFooterFont(array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+
+        $pdf->setDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+        $pdf->setMargins(12, 20, 12);
+        $pdf->setHeaderMargin(PDF_MARGIN_HEADER);
+        $pdf->setFooterMargin(PDF_MARGIN_FOOTER);
+
+        $pdf->setAutoPageBreak(true, 20);
+        $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+        // set some language-dependent strings (optional)
+        if (@file_exists(dirname(__FILE__) . '/lang/eng.php')) {
+            require_once(dirname(__FILE__) . '/lang/eng.php');
+            $pdf->setLanguageArray($l);
+        }
+
+        $pdf->AddPage();
+        $pdf->setFont('helvetica', '', 9);
+
+        $urlLogo = public_path('assets/img/Logo-L-1.png');
+        $urlLine = public_path('assets/img/line.png');
+        $urlLogoKab = public_path('assets/img/sulteng.png');
+        $tblpri = '<div class="container-fluid"> <table cellspacing="0" cellpadding="2" >
+                <tr>';
+        $tblpri .= '<td rowspan="2" align="center" width="45"><img src="' . $urlLogoKab . '" width="180" alt="Logo / Lambang SIMETRI"></td>';
+        $tblpri .= '<td rowspan="2" align="center" width="150"><img src="' . $urlLogo . '" width="180" alt="Logo / Lambang SIMETRI"></td>';
+        $tblpri .= '<td rowspan="2" align="center" width="8.5"><img src="' . $urlLine . '" width="180" alt="Logo / Lambang SIMETRI"></td>';
+        $tblpri .= '
+                <td width="500"><font size="17" style="text-transform:uppercase"><b>SATU DARAH</b></font></td>
+            </tr>
+            <tr>
+                <td width="500"><font size="12" style="text-transform:uppercase"><b>SISTEM AKOMODASI TERPADU DONOR DARAH</b></font></td>
+            </tr>
+            </table></div>';
+        $pdf->writeHTMLCell($w = 0, $h = 0, $x = '', $y = 10, $tblpri, $border = 0, $ln = 1, $fill = 0, $reseth = true, $align = 'top', $autopadding = true);
+        
+        if ($dateA == ''||$dateB == '') {
+            $dpri = '<br><br><p align="center" ><font size="12" style="text-transform:uppercase"><b>TIDAK ADA DATA</b></font></p>';
+            $pdf->writeHTML($dpri, true, false, false, false, '');
+
+            $pdf->Output('Satu Darah - Data Personal.pdf', 'I');
+            exit;
+        }
+        $this->data['Pgn'] = $this->getUser();
+        
+        $Prsn = PrsnModel::whereBetween('prsn_create', [$dateA, $dateB])->whereNotIn('prsn_telp', [''])->leftJoin('krj', 'prsn.prsn_krj', '=', 'krj.krj_id')->leftJoin('gol', 'prsn.prsn_gol', '=', 'gol.gol_id')->leftJoin('desa', 'prsn.prsn_desa', '=', 'desa.id')->leftJoin('kec', 'desa.desa_kec', '=', 'kec.id')->leftJoin('kab', 'kec.kec_kab', '=', 'kab.id')->select(['prsn_id', 'prsn_nm', 'prsn_nik', 'prsn_tmptlhr', 'prsn_tgllhr', 'gol_nm', 'prsn_gol', 'prsn_jk', 'prsn_alt', 'desa.nama as desa_nama', 'kec.nama as kec_nama', 'prsn_telp', 'prsn_wa', 'kec.id as kec_id', 'desa.id as desa_id', 'desa.jenis as jenis', 'prsn_krj', 'krj_nm', 'prsn_kd', 'prsn_bc', 'prsn_create'])->orderBy('prsn_ord', 'desc')->get();
+        
+        if ($Prsn==null) {
+            $dpri = '<br><br><p align="center" ><font size="12" style="text-transform:uppercase"><b>TIDAK ADA DATA</b></font></p>';
+            $pdf->writeHTML($dpri, true, false, false, false, '');
+
+            $pdf->Output('Satu Darah - Data Personal.pdf', 'I');
+            exit;
+        }
+
+        $Prsn = PrsnController::setData($Prsn);
+
+        $TabelPrsn = PrsnController::generateTablePDF($Prsn, '', $dateA, $dateB);
+        
+        $pdf->writeHTML($TabelPrsn[0], true, false, false, false, '');
+        
+        $pdf->writeHTML($TabelPrsn[1], true, false, false, false, '');
+
+        $pdf->Output('Satu Darah - Data Personal -' . $dateA . ' - '.$dateB.'.pdf', 'I');
+        exit;
     }
 
     public function loadExcelForm(Request $request)

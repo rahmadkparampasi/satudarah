@@ -94,6 +94,8 @@ Route::get('gol/setAct/{gol_act}/{gol_id}', [GolController::class, 'setAct'])->m
 
 Route::get('prsn', [PrsnController::class, 'index'])->middleware('auth')->name('prsn.index');
 Route::get('prsn/load/{search_key?}/{search_val?}', [PrsnController::class, 'load'])->middleware('auth')->middleware('ajax');
+Route::get('prsn/pdf/{dateA}/{dateB?}', [PrsnController::class, 'viewPdf'])->middleware('auth')->name('prsn.pdf');
+
 Route::post('prsn/search', [PrsnController::class, 'searchData'])->middleware('auth')->middleware('ajax')->name('prsn.search');
 Route::post('prsn/searchSide', [PrsnController::class, 'searchDataSide'])->middleware('auth')->middleware('ajax')->name('prsn.searchSide');
 Route::get('prsn/view/{prsn_id?}', [PrsnController::class, 'viewData'])->middleware('auth')->name('prsn.view');
