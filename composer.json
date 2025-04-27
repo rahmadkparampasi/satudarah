@@ -13,7 +13,7 @@
         "laravel/tinker": "^2.8",
         "mews/captcha": "^3.3",
         "mobiledetect/mobiledetectlib": "^3.74",
-        "netflie/whatsapp-cloud-api": "^2.0",
+        "netflie/whatsapp-cloud-api": "^2.2",
         "phpoffice/phpspreadsheet": "^1.29",
         "picqer/php-barcode-generator": "^2.3",
         "tecnickcom/tcpdf": "^6.6"
